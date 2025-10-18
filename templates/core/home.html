@@ -35,10 +35,12 @@
             </div>
         </div>
         <div class="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-            <div class="h-56 w-full bg-gradient-to-r from-blue-400 to-purple-500 sm:h-72 md:h-96 lg:w-full lg:h-full flex items-center justify-center">
-                <div class="text-white text-center">
-                    <img src="{% static 'images/sma-logo.jpg' %}" alt="SMA Logo" class="h-32 w-auto mx-auto mb-4" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <i class="fas fa-graduation-cap text-8xl mb-4" style="display: none;"></i>
+            <div class="h-56 w-full bg-gradient-to-r from-blue-400 to-purple-500 sm:h-72 md:h-96 lg:w-full lg:h-full flex items-center justify-center relative overflow-hidden">
+                <!-- Logo fills the entire square -->
+                <img src="{% static 'images/sma-logo.jpg' %}" alt="SMA Logo" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <!-- Fallback icon if logo fails to load -->
+                <div class="text-white text-center absolute inset-0 flex flex-col items-center justify-center" style="display: none;">
+                    <i class="fas fa-graduation-cap text-8xl mb-4"></i>
                     <h2 class="text-2xl font-bold">Education Excellence</h2>
                 </div>
             </div>
