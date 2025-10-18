@@ -1,0 +1,488 @@
+{% extends 'base.html' %}
+
+{% block title %}Fees & Payments - Shahriar's Medical Academy{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Fees & Payments</h1>
+                    <p class="mt-1 text-sm text-gray-600">Manage student fees, payments, and installments</p>
+                </div>
+                <div class="flex space-x-3">
+                    <a href="{% url 'fees:payment_list' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        <i class="fas fa-money-bill-wave mr-2"></i>All Payments
+                    </a>
+                    <a href="{% url 'fees:installment_list' %}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                        <i class="fas fa-calendar-alt mr-2"></i>Installments
+                    </a>
+                </div>
+            </div>
+            
+            {% if role == 'admin' %}
+            <!-- Batch Filter -->
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                <form method="get" class="flex items-center space-x-4">
+                    <div class="flex-1">
+                        <label for="batch" class="block text-sm font-medium text-gray-700 mb-1">Filter by Batch</label>
+                        <select name="batch" id="batch" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" onchange="this.form.submit()">
+                            <option value="">All Batches</option>
+                            {% for batch in batches %}
+                            <option value="{{ batch.id }}" {% if batch.id|stringformat:"s" == selected_batch_id %}selected{% endif %}>
+                                {{ batch.name }} - {{ batch.code }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if selected_batch %}
+                    <div class="flex-shrink-0">
+                        <a href="{% url 'fees:fee_dashboard' %}" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
+                            <i class="fas fa-times mr-2"></i>Clear Filter
+                        </a>
+                    </div>
+                    {% endif %}
+                </form>
+                
+                {% if selected_batch %}
+                <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                <strong>Showing data for:</strong> {{ selected_batch.name }} ({{ selected_batch.code }})
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if role == 'admin' %}
+        <!-- Admin Dashboard -->
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <!-- Pending Installments -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-clock text-2xl text-yellow-600"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Pending Installments</dt>
+                                <dd class="text-lg font-medium text-gray-900">{{ pending_installments }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overdue Installments -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Overdue Installments</dt>
+                                <dd class="text-lg font-medium text-gray-900">{{ overdue_installments }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Payments -->
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-chart-line text-2xl text-blue-600"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">This Month</dt>
+                                <dd class="text-lg font-medium text-gray-900">{{ recent_payments.count }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Payments -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Recent Payments</h3>
+                <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for payment in recent_payments %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-8 w-8">
+                                            <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+                                                <span class="text-white font-medium text-xs">{{ payment.student.user.first_name.0|default:payment.student.user.username.0|upper }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3">
+                                            <div class="text-sm font-medium text-gray-900">{{ payment.student.get_full_name }}</div>
+                                            {% if payment.student.note %}
+                                            <div class="text-xs text-red-600 font-medium">{{ payment.student.note }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ payment.batch.name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ payment.currency.code }} {{ payment.amount }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ payment.get_payment_method_display }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ payment.payment_date|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if payment.status == 'completed' %}bg-green-100 text-green-800
+                                        {% elif payment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-red-100 text-red-800{% endif %}">
+                                        {{ payment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center space-x-3">
+                                        <a href="{% url 'students:student_detail' payment.student.student_id %}" class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200" title="View Student Details">
+                                            <i class="fas fa-eye mr-1"></i>View
+                                        </a>
+                                        <a href="{% url 'students:edit_student' payment.student.student_id %}" class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200" title="Edit Student">
+                                            <i class="fas fa-edit mr-1"></i>Edit
+                                        </a>
+                                        <a href="{% url 'students:delete_student' payment.student.student_id %}" class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200" title="Delete Student">
+                                            <i class="fas fa-trash mr-1"></i>Delete
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">No recent payments</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch-wise Payment Summary -->
+        {% if batch_installments %}
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+                    {% if selected_batch %}
+                        Payment Status - {{ selected_batch.name }}
+                    {% else %}
+                        All Batch Payment Status
+                    {% endif %}
+                </h3>
+                <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Installment</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for installment in batch_installments %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-8 w-8">
+                                            <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+                                                <span class="text-white font-medium text-xs">{{ installment.student.user.first_name.0|default:installment.student.user.username.0|upper }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3">
+                                            <div class="text-sm font-medium text-gray-900">{{ installment.student.get_full_name }}</div>
+                                            {% if installment.student.note %}
+                                            <div class="text-xs text-red-600 font-medium">{{ installment.student.note }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ installment.batch.name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ installment.installment_number }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ installment.currency.code }} {{ installment.get_display_amount }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ installment.due_date|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {% if installment.get_payment_date %}
+                                        {{ installment.get_payment_date|date:"M d, Y" }}
+                                    {% else %}
+                                        <span class="text-gray-400">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if installment.get_payment_type == 'full_payment' %}bg-blue-100 text-blue-800
+                                        {% else %}bg-purple-100 text-purple-800{% endif %}">
+                                        {% if installment.get_payment_type == 'full_payment' %}Full Payment{% else %}Installment{% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if installment.status == 'paid' %}
+                                            {% if installment.get_payment_type == 'full_payment' %}bg-green-100 text-green-800
+                                            {% else %}bg-blue-100 text-blue-800{% endif %}
+                                        {% elif installment.is_overdue %}bg-red-100 text-red-800
+                                        {% elif installment.status == 'overdue' %}bg-red-100 text-red-800
+                                        {% elif installment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {% if installment.is_overdue %}
+                                            Overdue
+                                        {% elif installment.status == 'paid' and installment.get_payment_type == 'full_payment' %}
+                                            Complete
+                                        {% else %}
+                                            {{ installment.get_payment_status_display }}
+                                        {% endif %}
+                                    </span>
+                                    {% if installment.is_overdue %}
+                                        <div class="mt-1">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                                {{ installment.due_date|timesince }} overdue
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center space-x-3">
+                                        <a href="{% url 'students:student_detail' installment.student.student_id %}" class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200" title="View Student Details">
+                                            <i class="fas fa-eye mr-1"></i>View
+                                        </a>
+                                        <a href="{% url 'students:edit_student' installment.student.student_id %}" class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200" title="Edit Student">
+                                            <i class="fas fa-edit mr-1"></i>Edit
+                                        </a>
+                                        <a href="{% url 'students:delete_student' installment.student.student_id %}" class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200" title="Delete Student">
+                                            <i class="fas fa-trash mr-1"></i>Delete
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="px-6 py-4 text-center text-gray-500">No installments found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    {% elif role == 'student' %}
+        <!-- Student Dashboard -->
+        {% if student_installments %}
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">My Fee Installments</h3>
+                <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Installment</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for installment in student_installments %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    Installment {{ installment.installment_number }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ installment.currency.code }} {{ installment.amount }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ installment.due_date|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if installment.status == 'paid' %}bg-green-100 text-green-800
+                                        {% elif installment.status == 'overdue' %}bg-red-100 text-red-800
+                                        {% elif installment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ installment.get_payment_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    {% if installment.status == 'pending' or installment.status == 'overdue' %}
+                                    <a href="#" class="text-blue-600 hover:text-blue-900">
+                                        <i class="fas fa-credit-card mr-1"></i>Pay Now
+                                    </a>
+                                    {% else %}
+                                    <span class="text-gray-400">Paid</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Payments -->
+        {% if student_payments %}
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">My Payment History</h3>
+                <div class="overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receipt</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for payment in student_payments %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ payment.currency.code }} {{ payment.amount }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ payment.get_payment_method_display }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ payment.payment_date|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if payment.status == 'completed' %}bg-green-100 text-green-800
+                                        {% elif payment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-red-100 text-red-800{% endif %}">
+                                        {{ payment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="#" class="text-blue-600 hover:text-blue-900">
+                                        <i class="fas fa-download mr-1"></i>Download
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Quick Actions</h3>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <a href="{% url 'fees:payment_list' %}" class="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-500 rounded-lg border border-gray-200 hover:border-gray-300">
+                    <div>
+                        <span class="rounded-lg inline-flex p-3 bg-blue-50 text-blue-600 ring-4 ring-white">
+                            <i class="fas fa-money-bill-wave text-xl"></i>
+                        </span>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-lg font-medium text-gray-900">All Payments</h3>
+                        <p class="mt-2 text-sm text-gray-500">View and manage all payment records</p>
+                    </div>
+                </a>
+
+                <a href="{% url 'fees:installment_list' %}" class="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-500 rounded-lg border border-gray-200 hover:border-gray-300">
+                    <div>
+                        <span class="rounded-lg inline-flex p-3 bg-green-50 text-green-600 ring-4 ring-white">
+                            <i class="fas fa-calendar-alt text-xl"></i>
+                        </span>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-lg font-medium text-gray-900">Installments</h3>
+                        <p class="mt-2 text-sm text-gray-500">Manage fee installments and due dates</p>
+                    </div>
+                </a>
+
+                <a href="{% url 'fees:waiver_list' %}" class="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-500 rounded-lg border border-gray-200 hover:border-gray-300">
+                    <div>
+                        <span class="rounded-lg inline-flex p-3 bg-yellow-50 text-yellow-600 ring-4 ring-white">
+                            <i class="fas fa-gift text-xl"></i>
+                        </span>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-lg font-medium text-gray-900">Fee Waivers</h3>
+                        <p class="mt-2 text-sm text-gray-500">Manage scholarships and fee waivers</p>
+                    </div>
+                </a>
+
+                <a href="{% url 'fees:refund_list' %}" class="relative group bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-500 rounded-lg border border-gray-200 hover:border-gray-300">
+                    <div>
+                        <span class="rounded-lg inline-flex p-3 bg-red-50 text-red-600 ring-4 ring-white">
+                            <i class="fas fa-undo text-xl"></i>
+                        </span>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-lg font-medium text-gray-900">Refunds</h3>
+                        <p class="mt-2 text-sm text-gray-500">Process and track fee refunds</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

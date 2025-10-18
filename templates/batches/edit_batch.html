@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Batch - Shahriar's Medical Academy{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Edit Batch: {{ batch.name }}</h1>
+                <div class="flex space-x-3">
+                    <a href="{% url 'batches:batch_detail' batch.id %}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Batch
+                    </a>
+                    <a href="{% url 'batches:batch_list' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        <i class="fas fa-list mr-2"></i>Batch List
+                    </a>
+                </div>
+            </div>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Batch Name *</label>
+                            <input type="text" name="name" id="name" value="{{ batch.name }}" required 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                                   placeholder="e.g., Batch 57, Batch 59">
+                        </div>
+                        <div>
+                            <label for="code" class="block text-sm font-medium text-gray-700">Batch Code *</label>
+                            <input type="text" name="code" id="code" value="{{ batch.code }}" required 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                                   placeholder="e.g., B57, B59">
+                        </div>
+                        <div>
+                            <label for="status" class="block text-sm font-medium text-gray-700">Status *</label>
+                            <select name="status" id="status" required 
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="planning" {% if batch.status == 'planning' %}selected{% endif %}>Planning</option>
+                                <option value="active" {% if batch.status == 'active' %}selected{% endif %}>Active</option>
+                                <option value="completed" {% if batch.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="cancelled" {% if batch.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="coordinator" class="block text-sm font-medium text-gray-700">Batch Coordinator</label>
+                            <select name="coordinator" id="coordinator" 
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="">Select Coordinator (Optional)</option>
+                                {% for teacher in teachers %}
+                                <option value="{{ teacher.id }}" {% if batch.coordinator.id == teacher.id %}selected{% endif %}>
+                                    {{ teacher.user.get_full_name }} - {{ teacher.designation }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Schedule Information -->
+                <div class="pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Schedule Information</h3>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" value="{{ batch.start_date|date:'Y-m-d' }}" 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <p class="mt-1 text-sm text-gray-500">Optional - can be set later</p>
+                        </div>
+                        <div>
+                            <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                            <input type="date" name="end_date" id="end_date" value="{{ batch.end_date|date:'Y-m-d' }}" 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <p class="mt-1 text-sm text-gray-500">Optional - can be set later</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="flex justify-end space-x-3">
+                    <a href="{% url 'batches:batch_detail' batch.id %}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400">
+                        Cancel
+                    </a>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-save mr-2"></i>Update Batch
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

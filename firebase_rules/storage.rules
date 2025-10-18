@@ -1,0 +1,96 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Student profile images
+    match /student_profiles/{userId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.role == 'teacher' ||
+         request.auth.uid == userId);
+    }
+    
+    // Student documents
+    match /student_documents/{studentId}/{allPaths=**} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.role == 'teacher' ||
+         request.auth.uid == resource.metadata.student_user_id);
+      allow write: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.role == 'teacher');
+    }
+    
+    // User profile images
+    match /user_profiles/{userId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.uid == userId);
+    }
+    
+    // Course materials
+    match /course_materials/{courseId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.role == 'teacher');
+    }
+    
+    // Assignment submissions
+    match /assignments/{assignmentId}/{studentId}/{allPaths=**} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.role == 'teacher' ||
+         request.auth.uid == studentId);
+      allow write: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.role == 'teacher' ||
+         request.auth.uid == studentId);
+    }
+    
+    // Certificates and transcripts
+    match /certificates/{studentId}/{allPaths=**} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.role == 'teacher' ||
+         request.auth.uid == resource.metadata.student_user_id);
+      allow write: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.role == 'teacher');
+    }
+    
+    // Payment receipts
+    match /receipts/{paymentId}/{allPaths=**} {
+      allow read: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.role == 'teacher' ||
+         request.auth.uid == resource.metadata.student_user_id);
+      allow write: if request.auth != null && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.role == 'teacher');
+    }
+    
+    // System files (admin only)
+    match /system/{allPaths=**} {
+      allow read: if request.auth != null && 
+        request.auth.token.role == 'admin';
+      allow write: if request.auth != null && 
+        request.auth.token.role == 'admin';
+    }
+    
+    // Temporary uploads (for processing)
+    match /temp/{userId}/{allPaths=**} {
+      allow read: if request.auth != null && 
+        request.auth.uid == userId;
+      allow write: if request.auth != null && 
+        request.auth.uid == userId;
+      // Auto-delete after 24 hours (handled by Cloud Functions)
+    }
+    
+    // Default deny rule
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

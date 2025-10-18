@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Application Submitted - Shahriar's Medical Academy{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="text-center">
+            <div class="mx-auto h-24 w-24 flex items-center justify-center rounded-full bg-green-100">
+                <i class="fas fa-check-circle text-green-600 text-4xl"></i>
+            </div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Application Submitted Successfully!
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Thank you for your interest in Shahriar's Medical Academy.
+            </p>
+        </div>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div class="text-center">
+                <div class="space-y-4">
+                    <div class="text-gray-500">
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Application Details</h3>
+                        <div class="text-left space-y-2">
+                            <p><strong>Name:</strong> {{ application.get_full_name }}</p>
+                            <p><strong>Email:</strong> {{ application.email }}</p>
+                            <p><strong>Preferred Batch:</strong> {{ application.preferred_batch.name|default:"Not specified" }}</p>
+                            <p><strong>Application Date:</strong> {{ application.application_date|date:"M d, Y" }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    {{ application.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">What happens next?</h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>Our admissions team will review your application</li>
+                                    <li>You will receive an email notification about the status</li>
+                                    <li>If accepted, you'll receive further instructions</li>
+                                    <li>Processing typically takes 3-5 business days</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <div class="flex flex-col space-y-3">
+                    <a href="{% url 'core:home' %}" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-home mr-2"></i>
+                        Return to Home
+                    </a>
+                    <a href="{% url 'students:application_form' %}" class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-plus mr-2"></i>
+                        Submit Another Application
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Information -->
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
+        <div class="bg-white py-6 px-4 shadow sm:rounded-lg sm:px-6">
+            <div class="text-center">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Need Help?</h3>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div class="text-center">
+                        <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
+                            <i class="fas fa-phone text-blue-600 text-xl"></i>
+                        </div>
+                        <h4 class="mt-2 text-sm font-medium text-gray-900">Call Admissions</h4>
+                        <p class="mt-1 text-sm text-gray-500">+1 (555) 123-4567</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100">
+                            <i class="fas fa-envelope text-green-600 text-xl"></i>
+                        </div>
+                        <h4 class="mt-2 text-sm font-medium text-gray-900">Email Support</h4>
+                        <p class="mt-1 text-sm text-gray-500">admissions@shahriaracademy.com</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-purple-100">
+                            <i class="fas fa-comments text-purple-600 text-xl"></i>
+                        </div>
+                        <h4 class="mt-2 text-sm font-medium text-gray-900">Live Chat</h4>
+                        <p class="mt-1 text-sm text-gray-500">Available 24/7</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

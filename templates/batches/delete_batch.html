@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Batch - Shahriar's Medical Academy{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Delete Batch</h1>
+                <a href="{% url 'batches:batch_detail' batch.id %}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Batch
+                </a>
+            </div>
+            
+            <!-- Warning Message -->
+            <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            Warning: This action cannot be undone
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <p>Deleting this batch will:</p>
+                            <ul class="list-disc list-inside mt-2">
+                                <li>Remove the batch from active batch lists</li>
+                                <li>Hide the batch from batch management</li>
+                                <li>Preserve student records and payment history</li>
+                                <li>Maintain academic records for reporting</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Batch Information -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Batch Information</h3>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Batch Name</dt>
+                        <dd class="text-sm text-gray-900">{{ batch.name }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Batch Code</dt>
+                        <dd class="text-sm text-gray-900">{{ batch.code }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Status</dt>
+                        <dd class="text-sm text-gray-900">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if batch.status == 'active' %}bg-green-100 text-green-800
+                                {% elif batch.status == 'planning' %}bg-yellow-100 text-yellow-800
+                                {% elif batch.status == 'completed' %}bg-blue-100 text-blue-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ batch.get_status_display }}
+                            </span>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Coordinator</dt>
+                        <dd class="text-sm text-gray-900">{{ batch.coordinator.get_full_name|default:"Not assigned" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Total Students</dt>
+                        <dd class="text-sm text-gray-900">{{ batch.total_students }}</dd>
+                    </div>
+                    {% if batch.start_date %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Start Date</dt>
+                        <dd class="text-sm text-gray-900">{{ batch.start_date|date:"M d, Y" }}</dd>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Confirmation Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">
+                                Confirm Deletion
+                            </h3>
+                            <div class="mt-2 text-sm text-yellow-700">
+                                <p>Are you sure you want to delete <strong>{{ batch.name }}</strong>?</p>
+                                <p class="mt-2">This action will remove the batch from active lists but preserve all student and payment records.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <a href="{% url 'batches:batch_detail' batch.id %}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        <i class="fas fa-trash mr-2"></i>Delete Batch
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

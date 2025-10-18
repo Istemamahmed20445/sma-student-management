@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Installment Details - Shahriar's Medical Academy{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Installment Details</h1>
+                    <p class="mt-1 text-sm text-gray-600">Installment {{ installment.installment_number }} for {{ installment.student.get_full_name }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'fees:installment_list' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Installments
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Installment Details -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Installment Information</h3>
+                    <dl class="space-y-3">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Student</dt>
+                            <dd class="text-sm text-gray-900">{{ installment.student.get_full_name }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Installment Number</dt>
+                            <dd class="text-sm text-gray-900">{{ installment.installment_number }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Amount</dt>
+                            <dd class="text-sm text-gray-900">{{ installment.currency.code }} {{ installment.amount }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Due Date</dt>
+                            <dd class="text-sm text-gray-900">{{ installment.due_date|date:"M d, Y" }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Status</dt>
+                            <dd class="text-sm text-gray-900">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if installment.status == 'paid' %}bg-green-100 text-green-800
+                                    {% elif installment.status == 'overdue' %}bg-red-100 text-red-800
+                                    {% elif installment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ installment.get_payment_status_display }}
+                                </span>
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Payment Details</h3>
+                    <dl class="space-y-3">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Paid Amount</dt>
+                            <dd class="text-sm text-gray-900">{{ installment.currency.code }} {{ installment.paid_amount }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Remaining Amount</dt>
+                            <dd class="text-sm text-gray-900">{{ installment.currency.code }} {{ installment.get_remaining_amount }}</dd>
+                        </div>
+                        {% if installment.paid_date %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Paid Date</dt>
+                            <dd class="text-sm text-gray-900">{{ installment.paid_date|date:"M d, Y H:i" }}</dd>
+                        </div>
+                        {% endif %}
+                        {% if installment.late_fee > 0 %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Late Fee</dt>
+                            <dd class="text-sm text-gray-900">{{ installment.currency.code }} {{ installment.late_fee }}</dd>
+                        </div>
+                        {% endif %}
+                        {% if installment.notes %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Notes</dt>
+                            <dd class="text-sm text-gray-900">{{ installment.notes }}</dd>
+                        </div>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

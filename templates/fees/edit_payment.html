@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Shahriar's Medical Academy{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+                    <p class="mt-1 text-sm text-gray-600">Edit payment record details</p>
+                </div>
+                <div>
+                    <a href="{% url 'fees:payment_detail' payment.id %}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Student Information (Read-only) -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Student Information</h3>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Student Name</label>
+                            <p class="mt-1 text-sm text-gray-900">{{ payment.student.user.get_full_name }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Student ID</label>
+                            <p class="mt-1 text-sm text-gray-900">{{ payment.student.student_id }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Batch</label>
+                            <p class="mt-1 text-sm text-gray-900">{{ payment.batch.name }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Current Status</label>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                {% if payment.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif payment.status == 'partial' %}bg-yellow-100 text-yellow-800
+                                {% elif payment.status == 'pending' %}bg-gray-100 text-gray-800
+                                {% elif payment.status == 'overdue' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ payment.status|title }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Details -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Payment Details</h3>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="total_amount" class="block text-sm font-medium text-gray-700">Total Amount</label>
+                            <input type="number" step="0.01" name="total_amount" id="total_amount" 
+                                   value="{{ payment.total_amount }}" required
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <p class="mt-1 text-sm text-gray-500">Total amount to be paid</p>
+                        </div>
+                        
+                        <div>
+                            <label for="currency" class="block text-sm font-medium text-gray-700">Currency</label>
+                            <select name="currency" id="currency" required
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                {% for currency in currencies %}
+                                <option value="{{ currency.id }}" {% if currency.id == payment.currency.id %}selected{% endif %}>
+                                    {{ currency.code }} - {{ currency.name }} ({{ currency.symbol }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="payment_method" class="block text-sm font-medium text-gray-700">Payment Method</label>
+                            <select name="payment_method" id="payment_method" required
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="installments" {% if payment.payment_method == 'installments' %}selected{% endif %}>Installments</option>
+                                <option value="full_payment" {% if payment.payment_method == 'full_payment' %}selected{% endif %}>Full Payment</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Current Payment Summary</label>
+                            <div class="mt-1 bg-blue-50 rounded-lg p-3">
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span class="font-medium text-gray-700">Total Paid:</span>
+                                        <span class="text-gray-900">{{ payment.currency.code }} {{ payment.get_total_paid|floatformat:2 }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="font-medium text-gray-700">Remaining:</span>
+                                        <span class="text-gray-900">{{ payment.currency.code }} {{ payment.get_remaining_amount|floatformat:2 }}</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-sm font-medium text-gray-700">Progress</span>
+                                        <span class="text-sm font-medium text-gray-700">{{ payment.get_completion_percentage|floatformat:1 }}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: {{ payment.get_completion_percentage }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div>
+                    <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
+                    <textarea name="notes" id="notes" rows="4" 
+                              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                              placeholder="Add any additional notes about this payment...">{{ payment.notes }}</textarea>
+                </div>
+
+                <!-- Warning Message -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">Important Notice</h3>
+                            <div class="mt-2 text-sm text-yellow-700">
+                                <p>Changing the total amount will affect the remaining balance calculation. Make sure the new amount is correct as this will impact the payment status and progress tracking.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <a href="{% url 'fees:payment_detail' payment.id %}" 
+                       class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        <i class="fas fa-save mr-2"></i>Update Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const totalAmountInput = document.getElementById('total_amount');
+    const currencySelect = document.getElementById('currency');
+    
+    // Get currency symbol for display
+    function getCurrencySymbol() {
+        const selectedOption = currencySelect.options[currencySelect.selectedIndex];
+        const text = selectedOption.text;
+        const match = text.match(/\(([^)]+)\)/);
+        return match ? match[1] : '$';
+    }
+    
+    // Update currency symbol when currency changes
+    currencySelect.addEventListener('change', function() {
+        // You could add real-time updates here if needed
+        console.log('Currency changed to:', getCurrencySymbol());
+    });
+    
+    // Validate total amount
+    totalAmountInput.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        if (value < 0) {
+            this.value = 0;
+        }
+    });
+});
+</script>
+{% endblock %}

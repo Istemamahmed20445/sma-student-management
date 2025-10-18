@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.get_full_name }} - Shahriar's Medical Academy{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-16 w-16">
+                        <div class="h-16 w-16 rounded-full bg-blue-500 flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">{{ student.user.first_name.0|default:student.user.username.0|upper }}</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h1 class="text-2xl font-bold text-gray-900">{{ student.get_full_name }}</h1>
+                        {% if student.note %}
+                        <p class="text-sm text-red-600 font-medium">{{ student.note }}</p>
+                        {% endif %}
+                        <p class="text-sm text-gray-600">Student ID: {{ student.student_id }}</p>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            {% if student.status == 'active' %}bg-green-100 text-green-800
+                            {% elif student.status == 'inactive' %}bg-gray-100 text-gray-800
+                            {% elif student.status == 'graduated' %}bg-blue-100 text-blue-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ student.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'students:edit_student' student.student_id %}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                        <i class="fas fa-edit mr-2"></i>Edit Student
+                    </a>
+                    <a href="{% url 'students:delete_student' student.student_id %}" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                        <i class="fas fa-trash mr-2"></i>Delete Student
+                    </a>
+                    <a href="{% url 'students:student_list' %}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Students
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Information -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Personal Information -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Personal Information</h3>
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Full Name</dt>
+                        <dd class="text-sm text-gray-900">{{ student.get_full_name }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Email</dt>
+                        <dd class="text-sm text-gray-900">{{ student.user.email }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Phone</dt>
+                        <dd class="text-sm text-gray-900">{{ student.phone|default:"Not provided" }}</dd>
+                    </div>
+                    {% if student.date_of_birth %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Date of Birth</dt>
+                        <dd class="text-sm text-gray-900">{{ student.date_of_birth|date:"M d, Y" }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if student.gender %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Gender</dt>
+                        <dd class="text-sm text-gray-900">{{ student.get_gender_display }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if student.nationality %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Nationality</dt>
+                        <dd class="text-sm text-gray-900">{{ student.nationality }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        <!-- Academic Information -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Academic Information</h3>
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Batch</dt>
+                        <dd class="text-sm text-gray-900">{{ student.batch.name|default:"Not assigned" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Enrollment Date</dt>
+                        <dd class="text-sm text-gray-900">{{ student.enrollment_date|date:"M d, Y" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Status</dt>
+                        <dd class="text-sm text-gray-900">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if student.status == 'active' %}bg-green-100 text-green-800
+                                {% elif student.status == 'inactive' %}bg-gray-100 text-gray-800
+                                {% elif student.status == 'graduated' %}bg-blue-100 text-blue-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ student.get_status_display }}
+                            </span>
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- First Installment Information -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">First Installment Information</h3>
+            <dl class="space-y-3">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">First Installment Date</dt>
+                    <dd class="text-sm text-gray-900">
+                        {% if first_installment %}
+                            {{ first_installment.due_date|date:"M d, Y" }}
+                        {% else %}
+                            <span class="text-gray-500">No installment found</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">First Installment Amount</dt>
+                    <dd class="text-sm text-gray-900">
+                        {% if first_installment %}
+                            {{ first_installment.currency.symbol }}{{ first_installment.amount }}
+                        {% else %}
+                            <span class="text-gray-500">No installment found</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Installment Status</dt>
+                    <dd class="text-sm text-gray-900">
+                        {% if first_installment %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if first_installment.status == 'paid' %}bg-green-100 text-green-800
+                                {% elif first_installment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ first_installment.get_status_display }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-500">No installment found</span>
+                        {% endif %}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Total Payment -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Total Payment of that person</h3>
+            <dl class="space-y-3">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Total Amount Paid</dt>
+                    <dd class="text-sm text-gray-900">
+                        {% if total_payment %}
+                            {{ total_payment.currency.symbol }}{{ total_payment.total_amount|floatformat:2 }}
+                        {% else %}
+                            <span class="text-gray-500">No payments found</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Payment Status</dt>
+                    <dd class="text-sm text-gray-900">
+                        {% if total_payment %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if total_payment.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif total_payment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ total_payment.get_status_display }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-500">No payments found</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Last Payment Date</dt>
+                    <dd class="text-sm text-gray-900">
+                        {% if total_payment %}
+                            {{ total_payment.last_payment_date|date:"M d, Y" }}
+                        {% else %}
+                            <span class="text-gray-500">No payments found</span>
+                        {% endif %}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

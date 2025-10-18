@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Application Details - Shahriar's Medical Academy{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Application Details</h1>
+                    <p class="mt-1 text-sm text-gray-600">{{ application.get_full_name }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'students:application_list' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Applications
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Information -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Personal Information -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Personal Information</h3>
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Full Name</dt>
+                        <dd class="text-sm text-gray-900">{{ application.get_full_name }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Email</dt>
+                        <dd class="text-sm text-gray-900">{{ application.email }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Phone</dt>
+                        <dd class="text-sm text-gray-900">{{ application.phone }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Date of Birth</dt>
+                        <dd class="text-sm text-gray-900">{{ application.date_of_birth|date:"M d, Y" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Gender</dt>
+                        <dd class="text-sm text-gray-900">{{ application.get_gender_display }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Nationality</dt>
+                        <dd class="text-sm text-gray-900">{{ application.nationality }}</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Academic Information -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Academic Information</h3>
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Preferred Batch</dt>
+                        <dd class="text-sm text-gray-900">{{ application.preferred_batch.name|default:"Not specified" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Application Date</dt>
+                        <dd class="text-sm text-gray-900">{{ application.application_date|date:"M d, Y" }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Status</dt>
+                        <dd class="text-sm text-gray-900">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if application.status == 'accepted' %}bg-green-100 text-green-800
+                                {% elif application.status == 'rejected' %}bg-red-100 text-red-800
+                                {% elif application.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% elif application.status == 'under_review' %}bg-blue-100 text-blue-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ application.get_status_display }}
+                            </span>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Preferred Currency</dt>
+                        <dd class="text-sm text-gray-900">{{ application.preferred_currency.code }} - {{ application.preferred_currency.name }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Installment Preference</dt>
+                        <dd class="text-sm text-gray-900">{{ application.installment_preference }} installments</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Information -->
+    {% if application.previous_education or application.work_experience or application.motivation_letter %}
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Additional Information</h3>
+            <div class="space-y-4">
+                {% if application.previous_education %}
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Previous Education</dt>
+                    <dd class="text-sm text-gray-900 mt-1">{{ application.previous_education }}</dd>
+                </div>
+                {% endif %}
+                {% if application.work_experience %}
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Work Experience</dt>
+                    <dd class="text-sm text-gray-900 mt-1">{{ application.work_experience }}</dd>
+                </div>
+                {% endif %}
+                {% if application.motivation_letter %}
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Motivation Letter</dt>
+                    <dd class="text-sm text-gray-900 mt-1">{{ application.motivation_letter }}</dd>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Review Section (Admin Only) -->
+    {% if user.profile.role == 'admin' and application.status == 'pending' %}
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Review Application</h3>
+            <form method="post" action="{% url 'students:update_application_status' application.id %}">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700">Decision</label>
+                        <select name="status" id="status" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="">Select Decision</option>
+                            <option value="accepted">Accept</option>
+                            <option value="rejected">Reject</option>
+                            <option value="waitlisted">Waitlist</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="review_notes" class="block text-sm font-medium text-gray-700">Review Notes</label>
+                        <textarea name="review_notes" id="review_notes" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Add any notes about this application..."></textarea>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        <i class="fas fa-check mr-2"></i>Submit Review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

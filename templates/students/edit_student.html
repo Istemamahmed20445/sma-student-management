@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Student - Shahriar's Medical Academy{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Edit Student: {{ student.get_full_name }}</h1>
+                <div class="flex space-x-3">
+                    <a href="{% url 'students:student_detail' student.student_id %}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Student
+                    </a>
+                    <a href="{% url 'students:student_list' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        <i class="fas fa-list mr-2"></i>Student List
+                    </a>
+                </div>
+            </div>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Account Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-gray-700">First Name *</label>
+                            <input type="text" name="first_name" id="first_name" value="{{ student.user.first_name }}" required 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name *</label>
+                            <input type="text" name="last_name" id="last_name" value="{{ student.user.last_name }}" required 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email Address *</label>
+                            <input type="email" name="email" id="email" value="{{ student.user.email }}" required 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                            <input type="text" name="username" id="username" value="{{ student.user.username }}" readonly 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm">
+                            <p class="mt-1 text-sm text-gray-500">Username cannot be changed</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                            <input type="tel" name="phone" id="phone" value="{{ student.phone }}" 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Academic Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Academic Information</h3>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="batch" class="block text-sm font-medium text-gray-700">Batch</label>
+                            <select name="batch" id="batch" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="">Select Batch (Optional)</option>
+                                {% for batch in batches %}
+                                <option value="{{ batch.id }}" {% if student.batch.id == batch.id %}selected{% endif %}>{{ batch.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="enrollment_date" class="block text-sm font-medium text-gray-700">Enrollment Date *</label>
+                            <input type="date" name="enrollment_date" id="enrollment_date" value="{{ student.enrollment_date|date:'Y-m-d' }}" required 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Special Notes -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Special Notes</h3>
+                    <div>
+                        <label for="note" class="block text-sm font-medium text-gray-700">Special Notes (Optional)</label>
+                        <textarea name="note" id="note" rows="3" placeholder="Add any special notes about this student..." 
+                                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">{{ student.note }}</textarea>
+                        <p class="mt-1 text-sm text-gray-500">These notes will be displayed in red ink under the student's name in various sections.</p>
+                    </div>
+                </div>
+                
+                <!-- Payment Management -->
+                <div class="pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Payment Management</h3>
+                    
+                    <!-- Current Payment Status -->
+                    <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                        <h4 class="text-md font-medium text-gray-900 mb-3">Current Payment Status</h4>
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+                                <div class="flex items-center space-x-3">
+                                    <select name="payment_status" id="payment_status" class="border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                        <option value="remaining">Remaining</option>
+                                        <option value="complete">Complete</option>
+                                    </select>
+                                    <button type="button" id="updateStatusBtn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm">
+                                        <i class="fas fa-sync-alt mr-1"></i>Update Status
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Remaining Installments -->
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <h4 class="text-md font-medium text-gray-900 mb-3">Add Remaining Installments</h4>
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div>
+                                <label for="installment_amount" class="block text-sm font-medium text-gray-700">Amount per Installment</label>
+                                <input type="number" name="installment_amount" id="installment_amount" step="0.01" min="0" placeholder="0.00" 
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="installment_count" class="block text-sm font-medium text-gray-700">Number of Installments</label>
+                                <input type="number" name="installment_count" id="installment_count" min="1" max="12" placeholder="1" 
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="installment_currency" class="block text-sm font-medium text-gray-700">Currency</label>
+                                <select name="installment_currency" id="installment_currency" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                    {% for currency in currencies %}
+                                    <option value="{{ currency.id }}" {% if currency.is_default %}selected{% endif %}>{{ currency.code }} - {{ currency.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="button" id="addInstallmentsBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                                <i class="fas fa-plus mr-2"></i>Add Installments
+                            </button>
+                            <p class="mt-2 text-sm text-gray-600">This will create the specified number of installments for the student.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="flex justify-end space-x-3">
+                    <a href="{% url 'students:student_detail' student.student_id %}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400">
+                        Cancel
+                    </a>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-save mr-2"></i>Update Student
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Payment Management -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const updateStatusBtn = document.getElementById('updateStatusBtn');
+    const addInstallmentsBtn = document.getElementById('addInstallmentsBtn');
+    const paymentStatusSelect = document.getElementById('payment_status');
+    
+    // Update Payment Status Button
+    if (updateStatusBtn) {
+        updateStatusBtn.addEventListener('click', function() {
+            const status = paymentStatusSelect.value;
+            const studentId = '{{ student.student_id }}';
+            
+            if (confirm(`Are you sure you want to update the payment status to "${status}"?`)) {
+                // Create a form to submit the status update
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{% url "students:edit_student" student.student_id %}';
+                
+                // Add CSRF token
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+                
+                // Add status update flag
+                const statusInput = document.createElement('input');
+                statusInput.type = 'hidden';
+                statusInput.name = 'update_status';
+                statusInput.value = 'true';
+                form.appendChild(statusInput);
+                
+                // Add payment status
+                const paymentStatusInput = document.createElement('input');
+                paymentStatusInput.type = 'hidden';
+                paymentStatusInput.name = 'payment_status';
+                paymentStatusInput.value = status;
+                form.appendChild(paymentStatusInput);
+                
+                // Add all other form data
+                const formData = new FormData(document.querySelector('form'));
+                for (let [key, value] of formData.entries()) {
+                    if (key !== 'csrfmiddlewaretoken' && key !== 'update_status' && key !== 'payment_status') {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        form.appendChild(input);
+                    }
+                }
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+    
+    // Add Installments Button
+    if (addInstallmentsBtn) {
+        addInstallmentsBtn.addEventListener('click', function() {
+            const amount = document.getElementById('installment_amount').value;
+            const count = document.getElementById('installment_count').value;
+            const currency = document.getElementById('installment_currency').value;
+            
+            if (!amount || !count) {
+                alert('Please fill in both amount and number of installments.');
+                return;
+            }
+            
+            if (confirm(`Add ${count} installments of ${amount} each?`)) {
+                // Create a form to submit the installment creation
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{% url "students:edit_student" student.student_id %}';
+                
+                // Add CSRF token
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+                
+                // Add installment creation flag
+                const installmentsInput = document.createElement('input');
+                installmentsInput.type = 'hidden';
+                installmentsInput.name = 'add_installments';
+                installmentsInput.value = 'true';
+                form.appendChild(installmentsInput);
+                
+                // Add installment data
+                const amountInput = document.createElement('input');
+                amountInput.type = 'hidden';
+                amountInput.name = 'installment_amount';
+                amountInput.value = amount;
+                form.appendChild(amountInput);
+                
+                const countInput = document.createElement('input');
+                countInput.type = 'hidden';
+                countInput.name = 'installment_count';
+                countInput.value = count;
+                form.appendChild(countInput);
+                
+                const currencyInput = document.createElement('input');
+                currencyInput.type = 'hidden';
+                currencyInput.name = 'installment_currency';
+                currencyInput.value = currency;
+                form.appendChild(currencyInput);
+                
+                // Add all other form data
+                const formData = new FormData(document.querySelector('form'));
+                for (let [key, value] of formData.entries()) {
+                    if (key !== 'csrfmiddlewaretoken' && key !== 'add_installments' && 
+                        key !== 'installment_amount' && key !== 'installment_count' && key !== 'installment_currency') {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        form.appendChild(input);
+                    }
+                }
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
