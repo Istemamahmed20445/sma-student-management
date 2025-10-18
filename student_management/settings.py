@@ -31,7 +31,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-%7)!f&f&(q%-22a0x+_clq7n1j
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 # Allow local network access
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0,192.168.68.50').split(',')
 
 
 # Application definition

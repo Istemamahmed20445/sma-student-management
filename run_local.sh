@@ -16,6 +16,10 @@ echo "   - Local: http://localhost:8000"
 echo "   - Network: http://$LOCAL_IP:8000"
 echo "=================================================="
 
+# Activate virtual environment
+echo "🐍 Activating virtual environment..."
+source venv/bin/activate
+
 # Run migrations
 echo "📊 Running database migrations..."
 python manage.py migrate
