@@ -10,10 +10,19 @@
     <meta name="description" content="Student Management System for Shahriar's Medical Academy">
     <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SMA">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SMA Student Management">
     <meta name="msapplication-TileColor" content="#2563eb">
     <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- iOS PWA Enhancements -->
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    
+    <!-- Android PWA Enhancements -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="SMA Student Management">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="{% static 'manifest.json' %}">
@@ -353,7 +362,7 @@
             // Register Service Worker
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js')
+                    navigator.serviceWorker.register('/static/sw.js')
                         .then((registration) => {
                             console.log('Service Worker registered successfully:', registration.scope);
                             
