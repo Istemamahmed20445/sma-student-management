@@ -35,9 +35,9 @@ def register(request):
             if role == 'teacher':
                 Teacher.objects.create(
                     user=user,
-                    department_id=request.POST.get('department'),
+                    employee_id=f"T{user.id:04d}",
                     designation=request.POST.get('designation', 'Teacher'),
-                    hire_date=request.POST.get('hire_date')
+                    hire_date=request.POST.get('hire_date') or '2024-01-01'
                 )
             elif role == 'student':
                 # Student profile will be created when application is approved
@@ -47,6 +47,8 @@ def register(request):
                     user=user,
                     relationship=request.POST.get('relationship', 'guardian'),
                     phone=request.POST.get('phone', ''),
+                    occupation=request.POST.get('occupation', ''),
+                    employer=request.POST.get('employer', ''),
                     address=request.POST.get('address', ''),
                     city=request.POST.get('city', ''),
                     state=request.POST.get('state', ''),
