@@ -8,19 +8,37 @@ from django.views.decorators.cache import cache_control
 
 def service_worker(request):
     """Serve the service worker with proper headers"""
-    response = HttpResponse(open('static/sw.js', 'r').read(), content_type='application/javascript')
-    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response['Pragma'] = 'no-cache'
-    response['Expires'] = '0'
-    return response
+    import os
+    from django.conf import settings
+    
+    sw_path = os.path.join(settings.BASE_DIR, 'static', 'sw.js')
+    try:
+        with open(sw_path, 'r') as f:
+            content = f.read()
+        response = HttpResponse(content, content_type='application/javascript')
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        return response
+    except FileNotFoundError:
+        return HttpResponse('// Service worker not found', content_type='application/javascript', status=404)
 
 def manifest(request):
     """Serve the PWA manifest with proper headers"""
-    response = HttpResponse(open('static/manifest.json', 'r').read(), content_type='application/json')
-    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response['Pragma'] = 'no-cache'
-    response['Expires'] = '0'
-    return response
+    import os
+    from django.conf import settings
+    
+    manifest_path = os.path.join(settings.BASE_DIR, 'static', 'manifest.json')
+    try:
+        with open(manifest_path, 'r') as f:
+            content = f.read()
+        response = HttpResponse(content, content_type='application/json')
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        return response
+    except FileNotFoundError:
+        return HttpResponse('{}', content_type='application/json', status=404)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

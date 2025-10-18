@@ -218,7 +218,7 @@ def add_payment_transaction(request, payment_id):
                 amount=amount,
                 payment_method=payment_method,
                 notes=notes,
-                processed_by=request.user.userprofile if hasattr(request.user, 'userprofile') else None
+                processed_by=request.user.profile if hasattr(request.user, 'profile') else None
             )
             
             messages.success(request, f'Payment of {amount} recorded successfully!')
@@ -259,7 +259,7 @@ def excel_import(request):
             import_record = PaymentImport.objects.create(
                 batch=batch,
                 file_name=excel_file.name,
-                imported_by=request.user.userprofile if hasattr(request.user, 'userprofile') else None,
+                imported_by=request.user.profile if hasattr(request.user, 'profile') else None,
                 total_rows=len(df),
                 status='processing'
             )
@@ -288,7 +288,7 @@ def excel_import(request):
                         defaults={
                             'total_amount': total_amount,
                             'currency': currency,
-                            'created_by': request.user.userprofile if hasattr(request.user, 'userprofile') else None,
+                            'created_by': request.user.profile if hasattr(request.user, 'profile') else None,
                             'notes': f'Imported from {excel_file.name}'
                         }
                     )
@@ -297,7 +297,7 @@ def excel_import(request):
                         # Update existing payment
                         payment.total_amount = total_amount
                         payment.currency = currency
-                        payment.created_by = request.user.userprofile if hasattr(request.user, 'userprofile') else None
+                        payment.created_by = request.user.profile if hasattr(request.user, 'profile') else None
                         payment.notes = f'Imported from {excel_file.name}'
                         payment.save()
                     
@@ -492,7 +492,7 @@ class PaymentAPI(View):
                 amount=amount,
                 payment_method=payment_method,
                 notes=notes,
-                processed_by=request.user.userprofile if hasattr(request.user, 'userprofile') else None
+                processed_by=request.user.profile if hasattr(request.user, 'profile') else None
             )
             
             return JsonResponse({

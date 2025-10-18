@@ -339,7 +339,7 @@ def add_student(request):
                             'total_amount': total_amount,
                             'currency': currency,
                             'payment_method': payment_method,
-                            'created_by': request.user.userprofile if hasattr(request.user, 'userprofile') else None,
+                            'created_by': request.user.profile if hasattr(request.user, 'profile') else None,
                             'notes': f'Payment for student enrollment'
                         }
                     )
@@ -349,7 +349,7 @@ def add_student(request):
                         payment.total_amount = total_amount
                         payment.currency = currency
                         payment.payment_method = payment_method
-                        payment.created_by = request.user.userprofile if hasattr(request.user, 'userprofile') else None
+                        payment.created_by = request.user.profile if hasattr(request.user, 'profile') else None
                         payment.notes = f'Payment for student enrollment'
                         payment.save()
                     
@@ -360,7 +360,7 @@ def add_student(request):
                             amount=first_installment,
                             payment_method='cash',
                             notes=f'First installment payment',
-                            processed_by=request.user.userprofile if hasattr(request.user, 'userprofile') else None
+                            processed_by=request.user.profile if hasattr(request.user, 'profile') else None
                         )
                     
                     messages.success(request, f'Student {student.user.get_full_name()} added successfully with payment record!')

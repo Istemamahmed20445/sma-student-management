@@ -82,7 +82,6 @@
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
             <form method="get" class="space-y-4">
-                {% csrf_token %}
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
                     <div>
                         <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
@@ -302,12 +301,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Auto-submit when batch or status changes
     batchSelect.addEventListener('change', function() {
+        console.log('Batch changed to:', this.value);
         updateExportButton();
-        document.querySelector('form').submit();
+        
+        // Build URL manually to avoid form submission issues
+        const url = new URL(window.location);
+        url.searchParams.set('batch', this.value);
+        
+        // Navigate to the new URL
+        window.location.href = url.toString();
     });
     
     statusSelect.addEventListener('change', function() {
-        document.querySelector('form').submit();
+        console.log('Status changed to:', this.value);
+        
+        // Build URL manually to avoid form submission issues
+        const url = new URL(window.location);
+        url.searchParams.set('status', this.value);
+        
+        // Navigate to the new URL
+        window.location.href = url.toString();
     });
     
     // Update export button state
