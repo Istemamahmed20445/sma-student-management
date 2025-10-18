@@ -61,6 +61,35 @@ def debug_view(request):
     
     return JsonResponse(debug_info)
 
+def user_debug_view(request):
+    """Debug view to check user and role information"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Not authenticated'})
+    
+    user = request.user
+    debug_info = {
+        'username': user.username,
+        'is_superuser': user.is_superuser,
+        'is_staff': user.is_staff,
+        'is_active': user.is_active,
+        'profile_exists': False,
+        'profile_role': None,
+        'final_role': 'student',
+    }
+    
+    try:
+        profile = user.profile
+        debug_info['profile_exists'] = True
+        debug_info['profile_role'] = profile.role
+        debug_info['final_role'] = profile.role
+    except Exception as e:
+        debug_info['profile_error'] = str(e)
+        # If user is superuser but no profile, set as admin
+        if user.is_superuser:
+            debug_info['final_role'] = 'admin'
+    
+    return JsonResponse(debug_info)
+
 @login_required
 def dashboard(request):
     """Main dashboard view"""
@@ -68,11 +97,15 @@ def dashboard(request):
         user = request.user
         
         # Get user role from profile
+        role = 'student'  # Default role
         try:
             user_profile = user.profile
             role = user_profile.role
-        except:
-            role = 'student'  # Default role
+        except Exception as e:
+            logger.error(f"Profile access error for user {user.username}: {str(e)}")
+            # If user is superuser but no profile, set as admin
+            if user.is_superuser:
+                role = 'admin'
         
         context = {
             'title': 'Dashboard',

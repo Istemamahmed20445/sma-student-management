@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('test/', views.test_view, name='test'),
     path('debug/', views.debug_view, name='debug'),
+    path('user-debug/', views.user_debug_view, name='user_debug'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('notifications/', views.notifications, name='notifications'),
     path('notifications/<uuid:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
