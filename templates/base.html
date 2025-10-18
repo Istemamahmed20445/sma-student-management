@@ -1,9 +1,33 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Student Management System{% endblock %}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Student Management System for Shahriar's Medical Academy">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SMA">
+    <meta name="msapplication-TileColor" content="#2563eb">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/pwa/icon-152x152.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/pwa/icon-192x192.png' %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/pwa/icon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/pwa/icon-16x16.png' %}">
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileImage" content="{% static 'images/pwa/icon-144x144.png' %}">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -80,8 +104,9 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <h1 class="text-xl font-bold text-gray-800">
-                            <i class="fas fa-graduation-cap text-blue-600 mr-2"></i>
+                        <h1 class="text-xl font-bold text-gray-800 flex items-center">
+                            <img src="{% static 'images/sma-logo.jpg' %}" alt="SMA Logo" class="h-8 w-auto mr-3" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                            <i class="fas fa-graduation-cap text-blue-600 mr-2" style="display: none;"></i>
                             Shahriar's Medical Academy
                         </h1>
                     </div>
@@ -117,9 +142,12 @@
                                     <i class="fas fa-key mr-2"></i>Change Password
                                 </a>
                                 <hr class="my-1">
-                                <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <form method="post" action="{% url 'accounts:logout' %}" class="block">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                                </a>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     {% else %}
@@ -283,7 +311,434 @@
                     }, 300);
                 }, 5000);
             });
+            
+            // Initialize PWA
+            initializePWA();
         });
+        
+        // Check PWA requirements
+        function checkPWARequirements() {
+            console.log('🔍 Checking PWA Requirements...');
+            
+            const requirements = {
+                https: location.protocol === 'https:' || location.hostname === 'localhost',
+                serviceWorker: 'serviceWorker' in navigator,
+                manifest: document.querySelector('link[rel="manifest"]') !== null,
+                icons: document.querySelectorAll('link[rel="icon"]').length > 0,
+                appleTouchIcon: document.querySelector('link[rel="apple-touch-icon"]') !== null
+            };
+            
+            console.log('PWA Requirements Check:', requirements);
+            
+            const allMet = Object.values(requirements).every(req => req);
+            console.log('All PWA requirements met:', allMet);
+            
+            if (!allMet) {
+                console.warn('⚠️ Some PWA requirements are not met:', requirements);
+            }
+            
+            return requirements;
+        }
+        
+        // PWA Initialization
+        function initializePWA() {
+            console.log('🚀 Initializing PWA...');
+            console.log('User Agent:', navigator.userAgent);
+            console.log('Service Worker Support:', 'serviceWorker' in navigator);
+            console.log('Display Mode:', window.matchMedia('(display-mode: standalone)').matches);
+            
+            // Check PWA requirements
+            checkPWARequirements();
+            
+            // Register Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then((registration) => {
+                            console.log('Service Worker registered successfully:', registration.scope);
+                            
+                            // Check for updates
+                            registration.addEventListener('updatefound', () => {
+                                const newWorker = registration.installing;
+                                newWorker.addEventListener('statechange', () => {
+                                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                        // New content is available, show update notification
+                                        showUpdateNotification();
+                                    }
+                                });
+                            });
+                        })
+                        .catch((error) => {
+                            console.log('Service Worker registration failed:', error);
+                        });
+                });
+            }
+            
+            // Handle PWA Install Prompt
+            let deferredPrompt;
+            const installButton = document.getElementById('install-button');
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('PWA install prompt triggered');
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // Show install button if it exists
+                if (installButton) {
+                    installButton.style.display = 'block';
+                    installButton.addEventListener('click', () => {
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then((choiceResult) => {
+                            if (choiceResult.outcome === 'accepted') {
+                                console.log('User accepted the install prompt');
+                            } else {
+                                console.log('User dismissed the install prompt');
+                            }
+                            deferredPrompt = null;
+                            installButton.style.display = 'none';
+                        });
+                    });
+                }
+                
+                // Also show a custom install banner for better visibility
+                showInstallBanner();
+            });
+            
+            // Handle PWA installed event
+            window.addEventListener('appinstalled', (evt) => {
+                console.log('PWA was installed');
+                if (installButton) {
+                    installButton.style.display = 'none';
+                }
+                hideInstallBanner();
+            });
+            
+            // Check if app is already installed
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('App is already installed');
+                if (installButton) {
+                    installButton.style.display = 'none';
+                }
+            }
+            
+            // Initialize IndexedDB for offline storage
+            if ('indexedDB' in window) {
+                const request = indexedDB.open('SMAOfflineDB', 1);
+                
+                request.onerror = () => {
+                    console.error('Failed to open IndexedDB');
+                };
+                
+                request.onupgradeneeded = () => {
+                    const db = request.result;
+                    
+                    if (!db.objectStoreNames.contains('submissions')) {
+                        const store = db.createObjectStore('submissions', { keyPath: 'id', autoIncrement: true });
+                        store.createIndex('timestamp', 'timestamp', { unique: false });
+                    }
+                };
+                
+                request.onsuccess = () => {
+                    console.log('IndexedDB initialized successfully');
+                };
+            }
+        }
+        
+        // Show update notification
+        function showUpdateNotification() {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            notification.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span>New version available!</span>
+                    <button onclick="updateApp()" class="ml-4 bg-white text-blue-500 px-3 py-1 rounded text-sm font-medium">
+                        Update
+                    </button>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 10000);
+        }
+        
+        // Update app function
+        function updateApp() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration().then((registration) => {
+                    if (registration && registration.waiting) {
+                        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        window.location.reload();
+                    }
+                });
+            }
+        }
+        
+        // Handle offline/online status
+        function updateOnlineStatus() {
+            const status = navigator.onLine ? 'online' : 'offline';
+            console.log('Connection status:', status);
+            
+            // Show offline indicator
+            if (!navigator.onLine) {
+                showOfflineIndicator();
+            } else {
+                hideOfflineIndicator();
+            }
+        }
+        
+        function showOfflineIndicator() {
+            let indicator = document.getElementById('offline-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'offline-indicator';
+                indicator.className = 'fixed bottom-4 left-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+                indicator.innerHTML = '<i class="fas fa-wifi-slash mr-2"></i>You are offline';
+                document.body.appendChild(indicator);
+            }
+        }
+        
+        function hideOfflineIndicator() {
+            const indicator = document.getElementById('offline-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+        
+        // Listen for online/offline events
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        // Initial status check
+        updateOnlineStatus();
+        
+        // Show install banner function
+        function showInstallBanner() {
+            // Don't show if already installed
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                return;
+            }
+            
+            let banner = document.getElementById('install-banner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'install-banner';
+                banner.className = 'fixed top-0 left-0 right-0 bg-blue-600 text-white px-4 py-3 shadow-lg z-50 flex items-center justify-between';
+                banner.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-mobile-alt mr-2"></i>
+                        <span class="text-sm font-medium">Install SMA App for better experience!</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="installPWA()" class="bg-white text-blue-600 px-3 py-1 rounded text-sm font-medium hover:bg-gray-100">
+                            Install
+                        </button>
+                        <button onclick="hideInstallBanner()" class="text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(banner);
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    hideInstallBanner();
+                }, 10000);
+            }
+        }
+        
+        // Hide install banner function
+        function hideInstallBanner() {
+            const banner = document.getElementById('install-banner');
+            if (banner) {
+                banner.remove();
+            }
+        }
+        
+        // Install PWA function
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                    hideInstallBanner();
+                });
+            } else {
+                // Fallback for iOS Safari
+                alert('To install this app on your iOS device, tap the Share button and then "Add to Home Screen".');
+            }
+        }
+        
+        // Show install instructions function
+        function showInstallInstructions() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+            const isChrome = /Chrome/.test(navigator.userAgent);
+            
+            let instructions = '';
+            
+            if (isIOS) {
+                instructions = `
+                    <div class="text-left">
+                        <h3 class="text-lg font-semibold mb-3">📱 Install on iOS:</h3>
+                        <ol class="list-decimal list-inside space-y-2 text-sm">
+                            <li>Tap the <strong>Share</strong> button (📤) at the bottom of Safari</li>
+                            <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                            <li>Tap <strong>"Add"</strong> to confirm</li>
+                            <li>The SMA app will appear on your home screen!</li>
+                        </ol>
+                    </div>
+                `;
+            } else if (isAndroid && isChrome) {
+                instructions = `
+                    <div class="text-left">
+                        <h3 class="text-lg font-semibold mb-3">🤖 Install on Android:</h3>
+                        <ol class="list-decimal list-inside space-y-2 text-sm">
+                            <li>Tap the <strong>menu</strong> (⋮) in Chrome</li>
+                            <li>Tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong></li>
+                            <li>Tap <strong>"Add"</strong> or <strong>"Install"</strong> to confirm</li>
+                            <li>The SMA app will install and appear on your home screen!</li>
+                        </ol>
+                    </div>
+                `;
+            } else {
+                instructions = `
+                    <div class="text-left">
+                        <h3 class="text-lg font-semibold mb-3">💻 Install Instructions:</h3>
+                        <div class="space-y-3 text-sm">
+                            <div>
+                                <strong>Chrome/Edge Desktop:</strong>
+                                <p>Look for the install icon (⬇️) in the address bar and click it.</p>
+                            </div>
+                            <div>
+                                <strong>iOS Safari:</strong>
+                                <p>Tap Share → "Add to Home Screen"</p>
+                            </div>
+                            <div>
+                                <strong>Android Chrome:</strong>
+                                <p>Tap menu → "Add to Home screen"</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-900">Install SMA App</h2>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    ${instructions}
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="this.closest('.fixed').remove()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Got it!
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Show PWA status function
+        function showPWAStatus() {
+            const requirements = checkPWARequirements();
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            const hasServiceWorker = 'serviceWorker' in navigator;
+            
+            let statusHtml = `
+                <div class="text-left space-y-3">
+                    <h3 class="text-lg font-semibold mb-3">📊 PWA Status Report</h3>
+                    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span>HTTPS/Localhost:</span>
+                            <span class="${requirements.https ? 'text-green-600' : 'text-red-600'}">
+                                ${requirements.https ? '✅' : '❌'}
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Service Worker:</span>
+                            <span class="${requirements.serviceWorker ? 'text-green-600' : 'text-red-600'}">
+                                ${requirements.serviceWorker ? '✅' : '❌'}
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Manifest:</span>
+                            <span class="${requirements.manifest ? 'text-green-600' : 'text-red-600'}">
+                                ${requirements.manifest ? '✅' : '❌'}
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Icons:</span>
+                            <span class="${requirements.icons ? 'text-green-600' : 'text-red-600'}">
+                                ${requirements.icons ? '✅' : '❌'}
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Apple Touch Icon:</span>
+                            <span class="${requirements.appleTouchIcon ? 'text-green-600' : 'text-red-600'}">
+                                ${requirements.appleTouchIcon ? '✅' : '❌'}
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>App Installed:</span>
+                            <span class="${isStandalone ? 'text-green-600' : 'text-yellow-600'}">
+                                ${isStandalone ? '✅ Yes' : '❌ No'}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-gray-100 rounded text-xs">
+                        <strong>Browser:</strong> ${navigator.userAgent.split(' ')[0]}<br>
+                        <strong>Protocol:</strong> ${location.protocol}<br>
+                        <strong>Host:</strong> ${location.hostname}
+                    </div>
+                </div>
+            `;
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-900">PWA Status</h2>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    ${statusHtml}
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="this.closest('.fixed').remove()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Make functions globally available
+        window.installPWA = installPWA;
+        window.hideInstallBanner = hideInstallBanner;
+        window.showInstallInstructions = showInstallInstructions;
+        window.showPWAStatus = showPWAStatus;
     </script>
     
     {% block extra_js %}{% endblock %}

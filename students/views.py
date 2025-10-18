@@ -224,7 +224,6 @@ def student_application_form(request):
                 state=request.POST.get('state'),
                 postal_code=request.POST.get('postal_code'),
                 country=request.POST.get('country'),
-                department_id=request.POST.get('department'),
                 preferred_batch_id=request.POST.get('preferred_batch') or None,
                 preferred_currency_id=request.POST.get('preferred_currency'),
                 installment_preference=int(request.POST.get('installment_preference', 2)),
