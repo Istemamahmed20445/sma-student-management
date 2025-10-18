@@ -2,42 +2,62 @@ import firebase_admin
 from firebase_admin import credentials, firestore, storage
 from django.conf import settings
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Initialize Firebase Admin SDK
 def initialize_firebase():
     """Initialize Firebase Admin SDK with service account credentials"""
-    if not firebase_admin._apps:
-        # Create credentials from settings
-        cred = credentials.Certificate({
-            "type": "service_account",
-            "project_id": settings.FIREBASE_CONFIG['project_id'],
-            "private_key_id": settings.FIREBASE_CONFIG['private_key_id'],
-            "private_key": settings.FIREBASE_CONFIG['private_key'],
-            "client_email": settings.FIREBASE_CONFIG['client_email'],
-            "client_id": settings.FIREBASE_CONFIG['client_id'],
-            "auth_uri": settings.FIREBASE_CONFIG['auth_uri'],
-            "token_uri": settings.FIREBASE_CONFIG['token_uri'],
-            "auth_provider_x509_cert_url": settings.FIREBASE_CONFIG['auth_provider_x509_cert_url'],
-            "client_x509_cert_url": settings.FIREBASE_CONFIG['client_x509_cert_url']
-        })
+    try:
+        if not firebase_admin._apps:
+            # Create credentials from settings
+            cred = credentials.Certificate({
+                "type": "service_account",
+                "project_id": settings.FIREBASE_CONFIG['project_id'],
+                "private_key_id": settings.FIREBASE_CONFIG['private_key_id'],
+                "private_key": settings.FIREBASE_CONFIG['private_key'],
+                "client_email": settings.FIREBASE_CONFIG['client_email'],
+                "client_id": settings.FIREBASE_CONFIG['client_id'],
+                "auth_uri": settings.FIREBASE_CONFIG['auth_uri'],
+                "token_uri": settings.FIREBASE_CONFIG['token_uri'],
+                "auth_provider_x509_cert_url": settings.FIREBASE_CONFIG['auth_provider_x509_cert_url'],
+                "client_x509_cert_url": settings.FIREBASE_CONFIG['client_x509_cert_url']
+            })
+            
+            firebase_admin.initialize_app(cred, {
+                'storageBucket': 'sma-student.firebasestorage.app'
+            })
+            logger.info("Firebase initialized successfully")
         
-        firebase_admin.initialize_app(cred, {
-            'storageBucket': 'sma-student.firebasestorage.app'
-        })
-    
-    return firebase_admin.get_app()
+        return firebase_admin.get_app()
+    except Exception as e:
+        logger.error(f"Firebase initialization failed: {str(e)}")
+        return None
 
 # Get Firestore client
 def get_firestore_client():
     """Get Firestore client instance"""
-    initialize_firebase()
-    return firestore.client()
+    try:
+        app = initialize_firebase()
+        if app:
+            return firestore.client()
+        return None
+    except Exception as e:
+        logger.error(f"Firestore client creation failed: {str(e)}")
+        return None
 
 # Get Storage client
 def get_storage_client():
     """Get Firebase Storage client instance"""
-    initialize_firebase()
-    return storage.bucket()
+    try:
+        app = initialize_firebase()
+        if app:
+            return storage.bucket()
+        return None
+    except Exception as e:
+        logger.error(f"Storage client creation failed: {str(e)}")
+        return None
 
 # Currency conversion utilities
 class CurrencyConverter:

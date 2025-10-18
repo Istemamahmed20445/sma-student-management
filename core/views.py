@@ -9,8 +9,11 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.contrib.auth.models import User
 from .models import Currency, AcademicYear, Semester
-from .firebase_config import CurrencyConverter
+from .firebase_config import CurrencyConverter, initialize_firebase, get_firestore_client
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 def home(request):
     """Home page view"""
@@ -27,33 +30,72 @@ def test_view(request):
     """Simple test view"""
     return HttpResponse("Student Management System is working!")
 
+def debug_view(request):
+    """Debug view to check system status"""
+    debug_info = {
+        'django_working': True,
+        'user_count': User.objects.count(),
+        'firebase_status': 'unknown',
+        'firestore_status': 'unknown',
+    }
+    
+    try:
+        # Test Firebase initialization
+        app = initialize_firebase()
+        if app:
+            debug_info['firebase_status'] = 'initialized'
+        else:
+            debug_info['firebase_status'] = 'failed'
+    except Exception as e:
+        debug_info['firebase_status'] = f'error: {str(e)}'
+    
+    try:
+        # Test Firestore
+        db = get_firestore_client()
+        if db:
+            debug_info['firestore_status'] = 'connected'
+        else:
+            debug_info['firestore_status'] = 'failed'
+    except Exception as e:
+        debug_info['firestore_status'] = f'error: {str(e)}'
+    
+    return JsonResponse(debug_info)
+
 @login_required
 def dashboard(request):
     """Main dashboard view"""
-    user = request.user
-    
-    # Get user role from profile
     try:
-        user_profile = user.profile
-        role = user_profile.role
-    except:
-        role = 'student'  # Default role
-    
-    context = {
-        'title': 'Dashboard',
-        'user': user,
-        'role': role,
-    }
-    
-    # Role-specific dashboard data
-    if role == 'admin':
-        context.update(get_admin_dashboard_data())
-    elif role == 'teacher':
-        context.update(get_teacher_dashboard_data(user))
-    elif role == 'student':
-        context.update(get_student_dashboard_data(user))
-    
-    return render(request, 'core/dashboard.html', context)
+        user = request.user
+        
+        # Get user role from profile
+        try:
+            user_profile = user.profile
+            role = user_profile.role
+        except:
+            role = 'student'  # Default role
+        
+        context = {
+            'title': 'Dashboard',
+            'user': user,
+            'role': role,
+        }
+        
+        # Role-specific dashboard data
+        try:
+            if role == 'admin':
+                context.update(get_admin_dashboard_data())
+            elif role == 'teacher':
+                context.update(get_teacher_dashboard_data(user))
+            elif role == 'student':
+                context.update(get_student_dashboard_data(user))
+        except Exception as e:
+            logger.error(f"Dashboard data error: {str(e)}")
+            context['error'] = 'Unable to load dashboard data'
+        
+        return render(request, 'core/dashboard.html', context)
+    except Exception as e:
+        logger.error(f"Dashboard view error: {str(e)}")
+        return HttpResponse(f"Dashboard error: {str(e)}", status=500)
 
 def get_admin_dashboard_data():
     """Get admin dashboard statistics"""
