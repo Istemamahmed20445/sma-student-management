@@ -1,0 +1,57 @@
+# Django Settings
+SECRET_KEY=django-insecure-%7)!f&f&(q%-22a0x+_clq7n1j0$*d75=nev53$xkyghx(12vh
+DEBUG=False
+ALLOWED_HOSTS=smastudentmanagement.onrender.com
+
+# Database (PostgreSQL)
+DATABASE_URL=postgresql://username:password@hostname:port/database_name
+
+# PWA Settings (Removed - keeping simple)
+# PWA_APP_NAME=Shahriar's Medical Academy
+# PWA_APP_DESCRIPTION=Student Management System for Shahriar's Medical Academy
+# PWA_APP_THEME_COLOR=#2563eb
+# PWA_APP_BACKGROUND_COLOR=#ffffff
+# PWA_APP_DISPLAY=standalone
+# PWA_APP_SCOPE=/
+# PWA_APP_ORIENTATION=portrait
+# PWA_APP_START_URL=/
+# PWA_APP_STATUS_BAR_STYLE=default
+
+# Security Settings
+SECURE_SSL_REDIRECT=True
+SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
+SECURE_BROWSER_XSS_FILTER=True
+SECURE_CONTENT_TYPE_NOSNIFF=True
+X_FRAME_OPTIONS=DENY
+
+# Static Files
+STATIC_URL=/static/
+STATIC_ROOT=staticfiles
+
+# Media Files
+MEDIA_URL=/media/
+MEDIA_ROOT=media
+
+# Email Settings (Optional)
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+
+# Firebase Settings
+FIREBASE_PROJECT_ID=sma-student
+FIREBASE_PRIVATE_KEY_ID=ddc98398f07f2365f1e6ca8b045f8eab327bbe4e
+FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCwobiUV8yPzQCN\nl5xrjSKX9QdAVHShybSk4vaIFa+xGamSfm+HRX0qtAutFxJmlSQ/c12MlByEsnxt\nCRb1dkVgMyjizX2ZbtUY7NDupXsHwLqlsFhYGV8dBpnsFNFz6V8VVXu4HXa6HWZ/\n2JtRc2VlSeNPRdT+MXKzm8gIiC+JRqC3xYAijc3CB7dDVKa5WYqW6bbdI2QrbYZH\nXD2XSLehxJPXDEdN0YWHAqXUMmd4cfK65Mygw640ZXe7LMqvnMlm2dzUyEdlT59b\nz6SHl+jsWjiBqXeRCZJl2S6o6NIWi5EPYeopAFipVnmFb+v1OQ0IcXCIF+cNCVP1\nperlxr0DAgMBAAECggEABH6A50lam5gQOQoQAU6MgEhMQG9Frm4m6gEaW7kNiNiJ\nz3/nD46Nkj4Vg/hvz+tgijrBuRd1qEywTMfr7R/uwPVcR3UKCpLe2i0AXeoY+MgH\nF7smbEts95yY4wBeme/oqu7LYJJjWHXyCzO0M/zXKh4YqgYxVqxkajx++PSaHQiD\nrS4OO1lotIhUJXbHtW1LHWwx9TX8R2qyT9uyaeK0eiQZuV6WtbPB9TBGE2LqaWa+\n3Wm+AmorKucgmGubwrCtVrSLFHSYALU+3gZD532nW51NtS6NuFqrmD+wnq1vHGu0\nHMMcyZVlkmEnd3SQOUXKml2QdW9kVnddUKCt7MeUsQKBgQDgWGYDTPNyLKkR6ebt\nKy8offaUA2bzAFgzml3xSwttNB3IgsfgM2MsFhM8RPdDRaRNdfzMK5zWrCXrHmSw\n7tuuWDgso0qPZn3Bae6NvwZCRESzZWczWpfzzjQNEjvUGW2wIpKWI40jpZZTg1pF\nxRsb0gdR9LOFBJD9CQWVppe/UQKBgQDJjdrba1ffsv6W8zGEZ43cHYICAs/w6iWP\nsV4OCA6QYb3X7DUJyxCFqgKjkRMaUwTfgcMDu/mxhjUIf5S4JKF5uOgwO13ee7/k\nqI0zEbbABgP4Bld3u99R19nPUgrncXBkbEbC/Q4C7HUFwF88b4UNXCfTCtsrBEs8\nv/OwI4xqEwKBgQC3tIssTrnWl22GhrMbKE6AaM0eHL8TYwfWkaQ1bs8XiCKPS1Ai\nbdHaiuULaCnVQ1SsPV5ZTakrPGH8arHnFGB9Hi45lyj5zeJSG81E8tRMNRzQjct5\nCMj+0q5aucCWCJCCN30zRj9Pnks/bYLhOOre2Bg4axkJZljXaqjRB06hUQKBgBoE\nodfpR3KtHIhH5IB/DaT4eivgSQ+EakzeTJHrIFYrB+KzrzUQbZWTmLucoqanSN3B\nVndI8Lal6HqsXXpX4DBiWja/syJhPyg5SeDpzHmFTUXbK7ddHTrnbkqBAL9XuXZ9\nM7VADWr7MzAG4URf8QEEgG+R2zD2YO/6p255aErZAoGBANJw55OCHzzf018DyFWd\nES3H0gC/ziN0jeJ1f/I6UmIswlWStIbvHmmnr8GZ6UyISzU/6LZq8RHvrtjtGEDa\nATUiNDv1qYt0+sE8c/eFWg8cklxXFQv7PCrrUXdNj09UJlI6Mlyneya9KFe+235a\nDa2cYfrCF0Xf5aKSX0Y5zA0u\n-----END PRIVATE KEY-----\n
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@sma-student.iam.gserviceaccount.com
+FIREBASE_CLIENT_ID=116218628638223423506
+FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
+FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
+FIREBASE_AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
+FIREBASE_CLIENT_X509_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40sma-student.iam.gserviceaccount.com
+
+# Application Settings
+CURRENCY_API_KEY=your-currency-api-key

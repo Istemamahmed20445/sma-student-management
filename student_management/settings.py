@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -91,13 +92,18 @@ WSGI_APPLICATION = 'student_management.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use SQLite for deployment (simple and reliable)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Use PostgreSQL for production, SQLite for development
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -200,17 +206,6 @@ CORS_ALLOWED_ORIGINS = [
 
 # Allow all local network access for testing
 CORS_ALLOW_ALL_ORIGINS = True
-
-# PWA Configuration
-PWA_APP_NAME = "Shahriar's Medical Academy"
-PWA_APP_DESCRIPTION = "Student Management System for Shahriar's Medical Academy"
-PWA_APP_THEME_COLOR = "#2563eb"
-PWA_APP_BACKGROUND_COLOR = "#ffffff"
-PWA_APP_DISPLAY = "standalone"
-PWA_APP_SCOPE = "/"
-PWA_APP_ORIENTATION = "portrait"
-PWA_APP_START_URL = "/"
-PWA_APP_STATUS_BAR_STYLE = "default"
 
 CORS_ALLOW_CREDENTIALS = True
 
