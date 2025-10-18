@@ -48,19 +48,50 @@ def batch_list(request):
 @login_required
 def add_batch(request):
     """Add new batch (Admin only)"""
-    if not request.user.profile.role == 'admin':
+    # Check if user has admin role
+    user_role = 'student'  # Default role
+    try:
+        user_profile = request.user.profile
+        user_role = user_profile.role
+    except Exception as e:
+        # If user is superuser but no profile, set as admin
+        if request.user.is_superuser:
+            user_role = 'admin'
+    
+    if user_role != 'admin':
         messages.error(request, 'You do not have permission to add batches.')
         return redirect('batches:batch_list')
+    
+    from accounts.models import Teacher
+    
+    context = {
+        'title': 'Add Batch',
+        'teachers': Teacher.objects.filter(status='active'),
+    }
     
     if request.method == 'POST':
         try:
             # Get form data
-            name = request.POST.get('name')
-            code = request.POST.get('code')
+            name = request.POST.get('name', '').strip()
+            code = request.POST.get('code', '').strip()
             status = request.POST.get('status', 'planning')
             coordinator_id = request.POST.get('coordinator') or None
             start_date = request.POST.get('start_date') or None
             end_date = request.POST.get('end_date') or None
+            
+            # Validate required fields
+            if not name:
+                messages.error(request, 'Batch name is required.')
+                return render(request, 'batches/add_batch.html', context)
+            
+            if not code:
+                messages.error(request, 'Batch code is required.')
+                return render(request, 'batches/add_batch.html', context)
+            
+            # Check if batch code already exists
+            if Batch.objects.filter(code=code).exists():
+                messages.error(request, f'Batch code "{code}" already exists. Please choose a different code.')
+                return render(request, 'batches/add_batch.html', context)
             
             # Create batch with simplified data
             batch = Batch.objects.create(
@@ -77,20 +108,26 @@ def add_batch(request):
             
         except Exception as e:
             messages.error(request, f'Error creating batch: {str(e)}')
-    
-    from accounts.models import Teacher
-    
-    context = {
-        'title': 'Add Batch',
-        'teachers': Teacher.objects.filter(is_active=True),
-    }
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Batch creation error: {str(e)}")
     
     return render(request, 'batches/add_batch.html', context)
 
 @login_required
 def edit_batch(request, batch_id):
     """Edit batch (Admin only)"""
-    if not request.user.profile.role == 'admin':
+    # Check if user has admin role
+    user_role = 'student'  # Default role
+    try:
+        user_profile = request.user.profile
+        user_role = user_profile.role
+    except Exception as e:
+        # If user is superuser but no profile, set as admin
+        if request.user.is_superuser:
+            user_role = 'admin'
+    
+    if user_role != 'admin':
         messages.error(request, 'You do not have permission to edit batches.')
         return redirect('batches:batch_list')
     
