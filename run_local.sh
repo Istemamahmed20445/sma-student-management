@@ -26,7 +26,7 @@ python manage.py migrate
 
 # Create admin user if it doesn't exist
 echo "👤 Creating admin user..."
-python create_admin.py
+python create_local_admin.py
 
 # Collect static files
 echo "📁 Collecting static files..."
