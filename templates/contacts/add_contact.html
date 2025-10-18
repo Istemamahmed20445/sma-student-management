@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Contact - Shahriar's Medical Academy{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Add New Contact</h1>
+                <a href="{% url 'contacts:contact_list' %}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Contacts
+                </a>
+            </div>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Full Name *</label>
+                            <input type="text" name="name" id="name" required 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                   placeholder="Enter full name">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                            <input type="email" name="email" id="email" 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                   placeholder="Enter email address (optional)">
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                            <input type="tel" name="phone" id="phone" 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                   placeholder="Enter phone number (optional)">
+                        </div>
+                        
+                        <div>
+                            <label for="facebook_url" class="block text-sm font-medium text-gray-700">Facebook Profile URL</label>
+                            <input type="url" name="facebook_url" id="facebook_url" 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                   placeholder="https://facebook.com/username (optional)">
+                            <p class="mt-1 text-sm text-gray-500">Enter the complete Facebook profile URL</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
+                        <textarea name="notes" id="notes" rows="4" 
+                                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                  placeholder="Add any additional notes about this contact (optional)"></textarea>
+                        <p class="mt-1 text-sm text-gray-500">Any special notes or important information about this contact</p>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-3">
+                    <a href="{% url 'contacts:contact_list' %}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        <i class="fas fa-save mr-2"></i>Add Contact
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validate Facebook URL
+    const facebookInput = document.getElementById('facebook_url');
+    facebookInput.addEventListener('blur', function() {
+        const value = this.value.trim();
+        if (value && !value.includes('facebook.com')) {
+            this.setCustomValidity('Please enter a valid Facebook URL');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+});
+</script>
+{% endblock %}

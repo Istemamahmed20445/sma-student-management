@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ contact.name }} - Contact Details{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ contact.name }}</h1>
+                    <p class="text-sm text-gray-600 mt-1">Contact Details</p>
+                </div>
+                <div class="flex space-x-3">
+                    <a href="{% url 'contacts:edit_contact' contact.id %}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                        <i class="fas fa-edit mr-2"></i>Edit
+                    </a>
+                    <button onclick="deleteContact('{{ contact.id }}', '{{ contact.name }}')" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                        <i class="fas fa-trash mr-2"></i>Delete
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Contact Information -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+                    <div class="space-y-4">
+                        <!-- Name -->
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-user text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Name</p>
+                                <p class="text-sm text-gray-600">{{ contact.name }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Email -->
+                        {% if contact.email %}
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-envelope text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Email</p>
+                                    <a href="mailto:{{ contact.email }}" class="text-sm text-blue-600 hover:text-blue-800">{{ contact.email }}</a>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Phone -->
+                        {% if contact.phone %}
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-phone text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Phone</p>
+                                    <a href="tel:{{ contact.phone }}" class="text-sm text-blue-600 hover:text-blue-800">{{ contact.phone }}</a>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Facebook -->
+                        {% if contact.facebook_url %}
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fab fa-facebook text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Facebook</p>
+                                    <a href="{{ contact.facebook_url }}" target="_blank" rel="noopener noreferrer" 
+                                       class="text-sm text-blue-600 hover:text-blue-800">
+                                        {{ contact.get_facebook_display_name|default:"View Profile" }}
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+                    <div class="space-y-4">
+                        <!-- Notes -->
+                        {% if contact.notes %}
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 mb-2">Notes</p>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ contact.notes }}</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-8">
+                                <i class="fas fa-sticky-note text-4xl text-gray-300 mb-2"></i>
+                                <p class="text-sm text-gray-500">No notes added yet</p>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Metadata -->
+                        <div class="border-t pt-4">
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="font-medium text-gray-900">Created</p>
+                                    <p class="text-gray-600">{{ contact.created_at|date:"M d, Y" }}</p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Last Updated</p>
+                                    <p class="text-gray-600">{{ contact.updated_at|date:"M d, Y" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="mt-8 border-t pt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                <div class="flex flex-wrap gap-3">
+                    {% if contact.email %}
+                        <a href="mailto:{{ contact.email }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-envelope mr-2"></i>Send Email
+                        </a>
+                    {% endif %}
+                    
+                    {% if contact.phone %}
+                        <a href="tel:{{ contact.phone }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-phone mr-2"></i>Call
+                        </a>
+                    {% endif %}
+                    
+                    {% if contact.facebook_url %}
+                        <a href="{{ contact.facebook_url }}" target="_blank" rel="noopener noreferrer" 
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                            <i class="fab fa-facebook mr-2"></i>View Facebook
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'contacts:edit_contact' contact.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                        <i class="fas fa-edit mr-2"></i>Edit Contact
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg max-w-md w-full p-6">
+            <div class="flex items-center mb-4">
+                <i class="fas fa-exclamation-triangle text-red-500 text-2xl mr-3"></i>
+                <h3 class="text-lg font-medium text-gray-900">Delete Contact</h3>
+            </div>
+            <p class="text-gray-600 mb-6">
+                Are you sure you want to delete <span id="contactName" class="font-medium"></span>? 
+                This action cannot be undone.
+            </p>
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeDeleteModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Cancel
+                </button>
+                <form id="deleteForm" method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteContact(contactId, contactName) {
+    document.getElementById('contactName').textContent = contactName;
+    document.getElementById('deleteForm').action = `/contacts/${contactId}/delete/`;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+</script>
+{% endblock %}

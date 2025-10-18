@@ -14,6 +14,7 @@ urlpatterns = [
     path('applications/<uuid:application_id>/update-status/', views.update_application_status, name='update_application_status'),
     path('apply/', views.student_application_form, name='application_form'),
     path('apply/success/<uuid:application_id>/', views.application_success, name='application_success'),
+    path('api/check-duplicate/', views.check_duplicate_student, name='check_duplicate_student'),
     path('api/<str:student_id>/', views.StudentAPIView.as_view(), name='student_api'),
     path('not-found/', views.student_not_found, name='student_not_found'),
 ]

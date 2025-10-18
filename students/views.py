@@ -578,3 +578,74 @@ class StudentAPIView(View):
             return JsonResponse({'error': 'Student not found'}, status=404)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def check_duplicate_student(request):
+    """Check for existing students by name or phone"""
+    try:
+        data = json.loads(request.body)
+        first_name = data.get('first_name', '').strip()
+        last_name = data.get('last_name', '').strip()
+        phone = data.get('phone', '').strip()
+        
+        duplicates = []
+        
+        # Check by name - improved case-insensitive matching
+        if first_name and last_name:
+            # Create multiple search patterns for better matching
+            search_patterns = [
+                Q(user__first_name__iexact=first_name) & Q(user__last_name__iexact=last_name),
+                Q(user__first_name__icontains=first_name) & Q(user__last_name__icontains=last_name),
+                Q(user__first_name__iexact=last_name) & Q(user__last_name__iexact=first_name),
+                Q(user__first_name__icontains=last_name) & Q(user__last_name__icontains=first_name),
+            ]
+            
+            # Combine all patterns with OR
+            combined_query = search_patterns[0]
+            for pattern in search_patterns[1:]:
+                combined_query |= pattern
+            
+            name_matches = Student.objects.filter(
+                combined_query,
+                is_active=True
+            ).select_related('user', 'batch')
+            
+            for student in name_matches:
+                duplicates.append({
+                    'id': student.student_id,
+                    'name': student.user.get_full_name(),
+                    'email': student.user.email,
+                    'phone': student.phone,
+                    'batch': student.batch.name if student.batch else 'Not Assigned',
+                    'status': student.get_status_display(),
+                    'match_type': 'name'
+                })
+        
+        # Check by phone
+        if phone:
+            phone_matches = Student.objects.filter(
+                phone__icontains=phone,
+                is_active=True
+            ).select_related('user', 'batch')
+            
+            for student in phone_matches:
+                # Avoid duplicates if already found by name
+                if not any(d['id'] == student.student_id for d in duplicates):
+                    duplicates.append({
+                        'id': student.student_id,
+                        'name': student.user.get_full_name(),
+                        'email': student.user.email,
+                        'phone': student.phone,
+                        'batch': student.batch.name if student.batch else 'Not Assigned',
+                        'status': student.get_status_display(),
+                        'match_type': 'phone'
+                    })
+        
+        return JsonResponse({
+            'duplicates': duplicates,
+            'count': len(duplicates)
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

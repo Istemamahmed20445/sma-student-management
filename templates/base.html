@@ -168,6 +168,12 @@
                         Fees & Payments
                     </a>
                     
+                    <!-- Contacts -->
+                    <a href="{% url 'contacts:contact_list' %}" class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {% if 'contacts' in request.resolver_match.namespace %}bg-blue-100 text-blue-900{% else %}text-gray-600 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                        <i class="fas fa-address-book mr-3 text-lg"></i>
+                        Contacts
+                    </a>
+                    
                     <!-- Admin Only -->
                     {% if user.profile.role == 'admin' %}
                     <div class="border-t border-gray-200 pt-4">

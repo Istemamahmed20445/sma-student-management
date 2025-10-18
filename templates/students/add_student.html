@@ -68,6 +68,25 @@
                     </div>
                 </div>
                 
+                <!-- Duplicate Detection Warning -->
+                <div id="duplicate-warning" class="hidden border-l-4 border-yellow-400 bg-yellow-50 p-4 rounded-md">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">Potential Duplicate Student Detected</h3>
+                            <div class="mt-2 text-sm text-yellow-700">
+                                <p>The following students have similar information:</p>
+                                <div id="duplicate-list" class="mt-2 space-y-2">
+                                    <!-- Duplicate students will be listed here -->
+                                </div>
+                                <p class="mt-2 font-medium">Please verify this is not a duplicate before proceeding.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Academic Information -->
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Academic Information</h3>
@@ -252,6 +271,119 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial update
     updatePaymentSummary();
+    
+    // Duplicate Detection
+    const firstNameInput = document.getElementById('first_name');
+    const lastNameInput = document.getElementById('last_name');
+    const phoneInput = document.getElementById('phone');
+    const duplicateWarning = document.getElementById('duplicate-warning');
+    const duplicateList = document.getElementById('duplicate-list');
+    
+    let duplicateCheckTimeout;
+    
+    // Function to check for duplicates
+    function checkForDuplicates() {
+        const firstName = firstNameInput.value.trim();
+        const lastName = lastNameInput.value.trim();
+        const phone = phoneInput.value.trim();
+        
+        console.log('Checking duplicates for:', { firstName, lastName, phone });
+        
+        // Only check if we have at least first name and last name, or phone
+        if ((firstName.length >= 2 && lastName.length >= 2) || phone.length >= 3) {
+            // Clear previous timeout
+            clearTimeout(duplicateCheckTimeout);
+            
+            // Set new timeout to avoid too many requests
+            duplicateCheckTimeout = setTimeout(() => {
+                console.log('Making API call to check duplicates...');
+                
+                fetch('{% url "students:check_duplicate_student" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        first_name: firstName,
+                        last_name: lastName,
+                        phone: phone
+                    })
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('API response:', data);
+                    if (data.duplicates && data.duplicates.length > 0) {
+                        console.log('Found duplicates:', data.duplicates);
+                        showDuplicateWarning(data.duplicates);
+                    } else {
+                        console.log('No duplicates found');
+                        hideDuplicateWarning();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking duplicates:', error);
+                    hideDuplicateWarning();
+                });
+            }, 500); // Wait 500ms after user stops typing
+        } else {
+            hideDuplicateWarning();
+        }
+    }
+    
+    // Function to show duplicate warning
+    function showDuplicateWarning(duplicates) {
+        let duplicateHTML = '';
+        
+        duplicates.forEach(duplicate => {
+            const matchType = duplicate.match_type === 'name' ? 'Name' : 'Phone';
+            duplicateHTML += `
+                <div class="bg-white p-3 rounded border border-yellow-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-medium text-gray-900">${duplicate.name}</div>
+                            <div class="text-sm text-gray-600">
+                                <span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs mr-2">${matchType} Match</span>
+                                Batch: ${duplicate.batch} | Status: ${duplicate.status}
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                ${duplicate.email ? `Email: ${duplicate.email}` : ''}
+                                ${duplicate.phone ? `Phone: ${duplicate.phone}` : ''}
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            ID: ${duplicate.id}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        duplicateList.innerHTML = duplicateHTML;
+        duplicateWarning.classList.remove('hidden');
+    }
+    
+    // Function to hide duplicate warning
+    function hideDuplicateWarning() {
+        duplicateWarning.classList.add('hidden');
+        duplicateList.innerHTML = '';
+    }
+    
+    // Add event listeners for duplicate detection
+    firstNameInput.addEventListener('input', checkForDuplicates);
+    lastNameInput.addEventListener('input', checkForDuplicates);
+    phoneInput.addEventListener('input', checkForDuplicates);
+    
+    // Hide warning when form is submitted
+    document.querySelector('form').addEventListener('submit', function() {
+        hideDuplicateWarning();
+    });
 });
 </script>
 {% endblock %}
