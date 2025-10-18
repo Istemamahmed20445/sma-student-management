@@ -1,23 +1,24 @@
-# Render Environment Variables Template
-# Copy these variables to your Render dashboard
+# Render Environment Variables - Copy to Render Dashboard
 
-# Django Settings
+# REQUIRED VARIABLES (Must Set These)
 DEBUG=False
-SECRET_KEY=your-secret-key-here
+SECRET_KEY=v+@5rt&lx)tw4#e&4-+!-0a_z905rjp998i9ovpp^kpyg*7rxk
 
-# Firebase Configuration (already in settings.py)
-# No additional Firebase env vars needed
+# OPTIONAL VARIABLES (Set If Needed)
+# CURRENCY_API_KEY=your-currency-api-key-here
 
-# Database (SQLite - no additional config needed)
-# PostgreSQL (if you decide to use it later)
-# DATABASE_URL=postgresql://user:password@host:port/database
-
-# Optional: Currency API Key
-# CURRENCY_API_KEY=your-currency-api-key
-
-# Optional: Email Configuration
+# EMAIL CONFIGURATION (if using email features)
 # EMAIL_HOST=smtp.gmail.com
 # EMAIL_PORT=587
 # EMAIL_USE_TLS=True
 # EMAIL_HOST_USER=your-email@gmail.com
 # EMAIL_HOST_PASSWORD=your-app-password
+
+# POSTGRESQL DATABASE (if upgrading from SQLite)
+# DATABASE_URL=postgresql://username:password@host:port/database_name
+
+# NOTES:
+# - Firebase configuration is already in settings.py (no env vars needed)
+# - SQLite database works without additional configuration
+# - Static files are handled automatically by WhiteNoise
+# - Security headers are enabled in production mode
