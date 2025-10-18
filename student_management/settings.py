@@ -91,13 +91,20 @@ WSGI_APPLICATION = 'student_management.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use SQLite for simplicity and reliability
+# Use Firebase as the primary database
+# Django will use Firebase for data storage instead of traditional SQL database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.sqlite3',  # Keep SQLite for Django's internal tables
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Firebase Database Configuration
+FIREBASE_DATABASE_URL = 'https://sma-student-default-rtdb.firebaseio.com/'
+
+# Firebase Realtime Database Configuration
+FIREBASE_RTDB_URL = 'https://sma-student-default-rtdb.firebaseio.com/'
 
 
 # Password validation

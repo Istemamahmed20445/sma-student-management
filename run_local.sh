@@ -20,9 +20,13 @@ echo "=================================================="
 echo "🐍 Activating virtual environment..."
 source venv/bin/activate
 
-# Run migrations
+# Run migrations (for Django's internal tables)
 echo "📊 Running database migrations..."
 python manage.py migrate
+
+# Test Firebase connection
+echo "🔥 Testing Firebase connection..."
+python test_firebase.py
 
 # Create admin user if it doesn't exist
 echo "👤 Creating admin user..."
