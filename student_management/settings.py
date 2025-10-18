@@ -106,7 +106,7 @@ if os.getenv('DATABASE_URL'):
     # Additional PostgreSQL settings for better reliability
     DATABASES['default']['OPTIONS'] = {
         'connect_timeout': 10,
-        'options': '-c default_transaction_isolation=read_committed'
+        'options': '-c default_transaction_isolation="read committed"'
     }
 else:
     DATABASES = {
