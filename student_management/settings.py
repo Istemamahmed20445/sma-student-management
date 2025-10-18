@@ -95,7 +95,18 @@ WSGI_APPLICATION = 'student_management.wsgi.application'
 # Use PostgreSQL for production, SQLite for development
 if os.getenv('DATABASE_URL'):
     DATABASES = {
-        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
+        'default': dj_database_url.parse(
+            os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+    # Ensure we're using the correct PostgreSQL backend for psycopg3
+    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
+    # Additional PostgreSQL settings for better reliability
+    DATABASES['default']['OPTIONS'] = {
+        'connect_timeout': 10,
+        'options': '-c default_transaction_isolation=read_committed'
     }
 else:
     DATABASES = {
