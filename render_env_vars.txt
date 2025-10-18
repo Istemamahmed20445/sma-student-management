@@ -1,0 +1,23 @@
+# Render Environment Variables Template
+# Copy these variables to your Render dashboard
+
+# Django Settings
+DEBUG=False
+SECRET_KEY=your-secret-key-here
+
+# Firebase Configuration (already in settings.py)
+# No additional Firebase env vars needed
+
+# Database (SQLite - no additional config needed)
+# PostgreSQL (if you decide to use it later)
+# DATABASE_URL=postgresql://user:password@host:port/database
+
+# Optional: Currency API Key
+# CURRENCY_API_KEY=your-currency-api-key
+
+# Optional: Email Configuration
+# EMAIL_HOST=smtp.gmail.com
+# EMAIL_PORT=587
+# EMAIL_USE_TLS=True
+# EMAIL_HOST_USER=your-email@gmail.com
+# EMAIL_HOST_PASSWORD=your-app-password
