@@ -263,7 +263,17 @@ def application_success(request, application_id):
 @login_required
 def add_student(request):
     """Add new student (Admin only)"""
-    if not request.user.profile.role == 'admin':
+    # Check if user has admin role
+    user_role = 'student'  # Default role
+    try:
+        user_profile = request.user.profile
+        user_role = user_profile.role
+    except Exception as e:
+        # If user is superuser but no profile, set as admin
+        if request.user.is_superuser:
+            user_role = 'admin'
+    
+    if user_role != 'admin':
         messages.error(request, 'You do not have permission to add students.')
         return redirect('students:student_list')
     
@@ -339,7 +349,7 @@ def add_student(request):
                             'total_amount': total_amount,
                             'currency': currency,
                             'payment_method': payment_method,
-                            'created_by': request.user.profile if hasattr(request.user, 'profile') else None,
+                            'created_by': request.user.profile,
                             'notes': f'Payment for student enrollment'
                         }
                     )
@@ -349,7 +359,7 @@ def add_student(request):
                         payment.total_amount = total_amount
                         payment.currency = currency
                         payment.payment_method = payment_method
-                        payment.created_by = request.user.profile if hasattr(request.user, 'profile') else None
+                        payment.created_by = request.user.profile
                         payment.notes = f'Payment for student enrollment'
                         payment.save()
                     
@@ -360,7 +370,7 @@ def add_student(request):
                             amount=first_installment,
                             payment_method='cash',
                             notes=f'First installment payment',
-                            processed_by=request.user.profile if hasattr(request.user, 'profile') else None
+                            processed_by=request.user.profile
                         )
                     
                     messages.success(request, f'Student {student.user.get_full_name()} added successfully with payment record!')
@@ -388,7 +398,17 @@ def add_student(request):
 @login_required
 def edit_student(request, student_id):
     """Edit student (Admin only)"""
-    if not request.user.profile.role == 'admin':
+    # Check if user has admin role
+    user_role = 'student'  # Default role
+    try:
+        user_profile = request.user.profile
+        user_role = user_profile.role
+    except Exception as e:
+        # If user is superuser but no profile, set as admin
+        if request.user.is_superuser:
+            user_role = 'admin'
+    
+    if user_role != 'admin':
         messages.error(request, 'You do not have permission to edit students.')
         return redirect('students:student_list')
     
@@ -507,7 +527,17 @@ def edit_student(request, student_id):
 @login_required
 def delete_student(request, student_id):
     """Delete student (Admin only)"""
-    if not request.user.profile.role == 'admin':
+    # Check if user has admin role
+    user_role = 'student'  # Default role
+    try:
+        user_profile = request.user.profile
+        user_role = user_profile.role
+    except Exception as e:
+        # If user is superuser but no profile, set as admin
+        if request.user.is_superuser:
+            user_role = 'admin'
+    
+    if user_role != 'admin':
         messages.error(request, 'You do not have permission to delete students.')
         return redirect('students:student_list')
     
