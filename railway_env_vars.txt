@@ -1,0 +1,56 @@
+# Railway Environment Variables Configuration
+# Copy these variables to your Railway project dashboard
+
+# =============================================================================
+# REQUIRED VARIABLES FOR RAILWAY DEPLOYMENT
+# =============================================================================
+
+# Django Secret Key (Generate a new one for production)
+SECRET_KEY=django-insecure-%7)!f&f&(q%-22a0x+_clq7n1j0$*d75=nev53$xkyghx(12vh
+
+# Debug Mode (Set to False for production)
+DEBUG=False
+
+# Allowed Hosts (Railway will provide your app URL)
+ALLOWED_HOSTS=localhost,127.0.0.1,*.railway.app,*.up.railway.app
+
+# =============================================================================
+# DATABASE (Railway will set this automatically when you add PostgreSQL)
+# =============================================================================
+# DATABASE_URL=postgresql://postgres:password@containers-us-west-xxx.railway.app:5432/railway
+
+# =============================================================================
+# PWA CONFIGURATION
+# =============================================================================
+PWA_APP_NAME=SMA Student Management
+PWA_APP_DESCRIPTION=Student Management System with PWA support
+PWA_APP_THEME_COLOR=#3B82F6
+PWA_APP_BACKGROUND_COLOR=#FFFFFF
+PWA_APP_DISPLAY=standalone
+PWA_APP_SCOPE=/
+PWA_APP_ORIENTATION=portrait
+PWA_APP_START_URL=/
+PWA_APP_STATUS_BAR_STYLE=default
+
+# =============================================================================
+# SECURITY SETTINGS
+# =============================================================================
+SECURE_BROWSER_XSS_FILTER=True
+SECURE_CONTENT_TYPE_NOSNIFF=True
+X_FRAME_OPTIONS=DENY
+SECURE_HSTS_SECONDS=31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS=True
+SECURE_HSTS_PRELOAD=True
+SECURE_SSL_REDIRECT=False
+SESSION_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
+
+# =============================================================================
+# APPLICATION SETTINGS
+# =============================================================================
+APP_NAME=SMA Student Management System
+APP_VERSION=1.0.0
+APP_ENVIRONMENT=production
+TIME_ZONE=UTC
+LANGUAGE_CODE=en-us
+LOG_LEVEL=INFO
