@@ -3,6 +3,7 @@
   "short_name": "SMA Student",
   "description": "Student Management System for Shahriar's Medical Academy - Manage students, batches, fees, and contacts",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
@@ -12,10 +13,6 @@
   "categories": ["education", "productivity", "business"],
   "dir": "ltr",
   "prefer_related_applications": false,
-  "display_override": ["window-controls-overlay", "standalone"],
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
   "icons": [
     {
       "src": "/static/images/pwa/icon-72x72.png",

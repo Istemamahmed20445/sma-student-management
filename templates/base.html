@@ -19,17 +19,24 @@
     <meta name="apple-touch-fullscreen" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
+    <meta name="apple-touch-startup-image" content="/static/images/pwa/icon-512x512.png">
     
     <!-- Android PWA Enhancements -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="SMA Student Management">
     
+    <!-- Critical PWA Meta Tags -->
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-orientations" content="portrait">
+    
     <!-- PWA Manifest -->
     <link rel="manifest" href="{% static 'manifest.json' %}">
     
     <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="{% static 'images/pwa/icon-192x192.png' %}">
     <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/pwa/icon-152x152.png' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/pwa/icon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="167x167" href="{% static 'images/pwa/icon-192x192.png' %}">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/pwa/icon-32x32.png' %}">
