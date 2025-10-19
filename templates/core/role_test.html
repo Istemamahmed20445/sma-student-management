@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Role Test - Student Management System{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6">Role Detection Test</h1>
+            
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-medium text-blue-900 mb-2">User Information</h3>
+                    <p><strong>Username:</strong> {{ username }}</p>
+                    <p><strong>Is Superuser:</strong> {{ is_superuser }}</p>
+                    <p><strong>Is Staff:</strong> {{ is_staff }}</p>
+                </div>
+                
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-medium text-green-900 mb-2">Role Information</h3>
+                    <p><strong>Detected Role:</strong> <span class="font-bold text-lg">{{ role|title }}</span></p>
+                    <p><strong>Profile Exists:</strong> {{ profile_exists }}</p>
+                    <p><strong>Profile Role:</strong> {{ profile_role }}</p>
+                </div>
+            </div>
+            
+            <div class="mt-6 p-4 bg-yellow-50 rounded-lg">
+                <h3 class="text-lg font-medium text-yellow-900 mb-2">Expected Results</h3>
+                <p><strong>For Admin User:</strong> Role should be "Admin"</p>
+                <p><strong>For Student User:</strong> Role should be "Student"</p>
+            </div>
+            
+            <div class="mt-6">
+                <a href="{% url 'core:dashboard' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                    Go to Dashboard
+                </a>
+                <a href="{% url 'core:user_debug' %}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 ml-2">
+                    JSON Debug Info
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
