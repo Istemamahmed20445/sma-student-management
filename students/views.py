@@ -356,7 +356,7 @@ def add_student(request):
                     total_amount = float(total_amount)
                     first_installment = float(first_installment) if first_installment else 0
                     
-                    # Get or create payment record
+                    # Get or create payment record (signal may have already created one)
                     payment, created = StudentPayment.objects.get_or_create(
                         student=student,
                         batch=batch,
@@ -364,7 +364,7 @@ def add_student(request):
                             'total_amount': total_amount,
                             'currency': currency,
                             'payment_method': payment_method,
-                            'created_by': request.user.profile,
+                            'created_by': request.user,  # Use User instance, not UserProfile
                             'notes': f'Payment for student enrollment'
                         }
                     )
@@ -374,7 +374,7 @@ def add_student(request):
                         payment.total_amount = total_amount
                         payment.currency = currency
                         payment.payment_method = payment_method
-                        payment.created_by = request.user.profile
+                        payment.created_by = request.user  # Use User instance, not UserProfile
                         payment.notes = f'Payment for student enrollment'
                         payment.save()
                     
@@ -385,7 +385,7 @@ def add_student(request):
                             amount=first_installment,
                             payment_method='cash',
                             notes=f'First installment payment',
-                            processed_by=request.user.profile
+                            processed_by=request.user  # Use User instance, not UserProfile
                         )
                     
                     messages.success(request, f'Student {student.user.get_full_name()} added successfully with payment record!')
