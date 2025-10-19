@@ -192,6 +192,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing add student form...');
+    
     const totalAmountInput = document.getElementById('total_amount');
     const firstInstallmentInput = document.getElementById('first_installment');
     const numInstallmentsSelect = document.getElementById('num_installments');
@@ -202,12 +204,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const remainingAmountDisplay = document.getElementById('remaining-amount-display');
     const installmentSchedule = document.getElementById('installment-schedule');
     
-    // Get currency symbol
+    console.log('Elements found:', {
+        totalAmountInput: !!totalAmountInput,
+        firstInstallmentInput: !!firstInstallmentInput,
+        numInstallmentsSelect: !!numInstallmentsSelect,
+        currencySelect: !!currencySelect,
+        totalAmountDisplay: !!totalAmountDisplay,
+        firstInstallmentDisplay: !!firstInstallmentDisplay,
+        remainingAmountDisplay: !!remainingAmountDisplay,
+        installmentSchedule: !!installmentSchedule
+    });
+    
+    if (currencySelect) {
+        console.log('Currency options:', Array.from(currencySelect.options).map(opt => opt.text));
+    }
+    
+    // Get currency symbol - simplified version
     function getCurrencySymbol() {
+        if (!currencySelect || !currencySelect.options || currencySelect.selectedIndex < 0) {
+            return '$';
+        }
         const selectedOption = currencySelect.options[currencySelect.selectedIndex];
         const text = selectedOption.text;
+        
+        // Look for symbol in parentheses
         const match = text.match(/\(([^)]+)\)/);
-        return match ? match[1] : '$';
+        if (match) {
+            return match[1];
+        }
+        
+        // Fallback: try to extract from currency code
+        const codeMatch = text.match(/^([A-Z]{3})/);
+        if (codeMatch) {
+            const code = codeMatch[1];
+            const symbolMap = {
+                'USD': '$',
+                'BDT': '৳',
+                'AUD': 'A$',
+                'INR': '₹',
+                'PKR': '₨'
+            };
+            return symbolMap[code] || '$';
+        }
+        
+        return '$';
     }
     
     // Update payment summary
@@ -217,12 +257,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const numInstallments = parseInt(numInstallmentsSelect.value) || 1;
         const currencySymbol = getCurrencySymbol();
         
+        console.log('Updating payment summary:', {
+            totalAmount,
+            firstInstallment,
+            numInstallments,
+            currencySymbol
+        });
+        
         // Update displays
-        totalAmountDisplay.textContent = currencySymbol + totalAmount.toFixed(2);
-        firstInstallmentDisplay.textContent = currencySymbol + firstInstallment.toFixed(2);
+        if (totalAmountDisplay) {
+            totalAmountDisplay.textContent = currencySymbol + totalAmount.toFixed(2);
+        }
+        if (firstInstallmentDisplay) {
+            firstInstallmentDisplay.textContent = currencySymbol + firstInstallment.toFixed(2);
+        }
         
         const remaining = totalAmount - firstInstallment;
-        remainingAmountDisplay.textContent = currencySymbol + remaining.toFixed(2);
+        if (remainingAmountDisplay) {
+            remainingAmountDisplay.textContent = currencySymbol + remaining.toFixed(2);
+        }
         
         // Update installment schedule
         updateInstallmentSchedule(totalAmount, firstInstallment, numInstallments, currencySymbol);
@@ -230,6 +283,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update installment schedule
     function updateInstallmentSchedule(totalAmount, firstInstallment, numInstallments, currencySymbol) {
+        console.log('Updating installment schedule:', { totalAmount, firstInstallment, numInstallments, currencySymbol });
+        
+        if (!installmentSchedule) {
+            console.log('Installment schedule element not found');
+            return;
+        }
+        
         if (totalAmount <= 0) {
             installmentSchedule.innerHTML = '<p class="text-gray-500">Enter total amount to see schedule</p>';
             return;
@@ -252,25 +312,55 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         installmentSchedule.innerHTML = scheduleHTML;
+        console.log('Schedule HTML updated:', scheduleHTML);
     }
     
     // Auto-calculate first installment when total amount changes
-    totalAmountInput.addEventListener('input', function() {
-        const totalAmount = parseFloat(this.value) || 0;
-        if (totalAmount > 0 && !firstInstallmentInput.value) {
-            // Set first installment to 30% of total amount
-            firstInstallmentInput.value = (totalAmount * 0.3).toFixed(2);
-        }
-        updatePaymentSummary();
-    });
+    if (totalAmountInput) {
+        totalAmountInput.addEventListener('input', function() {
+            console.log('Total amount input changed:', this.value);
+            const totalAmount = parseFloat(this.value) || 0;
+            if (totalAmount > 0 && (!firstInstallmentInput.value || firstInstallmentInput.value === '0')) {
+                // Set first installment to 30% of total amount
+                const calculatedFirstInstallment = (totalAmount * 0.3).toFixed(2);
+                firstInstallmentInput.value = calculatedFirstInstallment;
+                console.log('Auto-calculated first installment:', calculatedFirstInstallment);
+            }
+            updatePaymentSummary();
+        });
+    }
     
     // Update summary when inputs change
-    firstInstallmentInput.addEventListener('input', updatePaymentSummary);
-    numInstallmentsSelect.addEventListener('change', updatePaymentSummary);
-    currencySelect.addEventListener('change', updatePaymentSummary);
+    if (firstInstallmentInput) {
+        firstInstallmentInput.addEventListener('input', function() {
+            console.log('First installment input changed:', this.value);
+            updatePaymentSummary();
+        });
+    }
+    
+    if (numInstallmentsSelect) {
+        numInstallmentsSelect.addEventListener('change', function() {
+            console.log('Number of installments changed:', this.value);
+            updatePaymentSummary();
+        });
+    }
+    
+    if (currencySelect) {
+        currencySelect.addEventListener('change', function() {
+            console.log('Currency changed:', this.value, this.options[this.selectedIndex].text);
+            updatePaymentSummary();
+        });
+    }
     
     // Initial update
+    console.log('Running initial update...');
     updatePaymentSummary();
+    
+    // Add a small delay to ensure everything is loaded
+    setTimeout(() => {
+        console.log('Delayed update...');
+        updatePaymentSummary();
+    }, 100);
     
     // Duplicate Detection
     const firstNameInput = document.getElementById('first_name');
