@@ -263,15 +263,22 @@ def application_success(request, application_id):
 @login_required
 def add_student(request):
     """Add new student (Admin only)"""
-    # Check if user has admin role
+    # Check if user has admin role - FIXED ADMIN ROLE DETECTION
     user_role = 'student'  # Default role
-    try:
-        user_profile = request.user.profile
-        user_role = user_profile.role
-    except Exception as e:
-        # If user is superuser but no profile, set as admin
-        if request.user.is_superuser:
-            user_role = 'admin'
+    
+    # FORCE ADMIN ROLE FOR SUPERUSERS
+    if request.user.is_superuser:
+        user_role = 'admin'
+        print(f"DEBUG: Superuser detected - FORCING admin role for {request.user.username}")
+    else:
+        try:
+            user_profile = request.user.profile
+            user_role = user_profile.role
+            print(f"DEBUG: User {request.user.username} profile role: {user_role}")
+        except Exception as e:
+            print(f"DEBUG: Profile access error for user {request.user.username}: {str(e)}")
+    
+    print(f"DEBUG: Final role for {request.user.username}: {user_role}")
     
     if user_role != 'admin':
         messages.error(request, 'You do not have permission to add students.')
@@ -413,15 +420,22 @@ def add_student(request):
 @login_required
 def edit_student(request, student_id):
     """Edit student (Admin only)"""
-    # Check if user has admin role
+    # Check if user has admin role - FIXED ADMIN ROLE DETECTION
     user_role = 'student'  # Default role
-    try:
-        user_profile = request.user.profile
-        user_role = user_profile.role
-    except Exception as e:
-        # If user is superuser but no profile, set as admin
-        if request.user.is_superuser:
-            user_role = 'admin'
+    
+    # FORCE ADMIN ROLE FOR SUPERUSERS
+    if request.user.is_superuser:
+        user_role = 'admin'
+        print(f"DEBUG: Superuser detected - FORCING admin role for {request.user.username}")
+    else:
+        try:
+            user_profile = request.user.profile
+            user_role = user_profile.role
+            print(f"DEBUG: User {request.user.username} profile role: {user_role}")
+        except Exception as e:
+            print(f"DEBUG: Profile access error for user {request.user.username}: {str(e)}")
+    
+    print(f"DEBUG: Final role for {request.user.username}: {user_role}")
     
     if user_role != 'admin':
         messages.error(request, 'You do not have permission to edit students.')
@@ -542,15 +556,22 @@ def edit_student(request, student_id):
 @login_required
 def delete_student(request, student_id):
     """Delete student (Admin only)"""
-    # Check if user has admin role
+    # Check if user has admin role - FIXED ADMIN ROLE DETECTION
     user_role = 'student'  # Default role
-    try:
-        user_profile = request.user.profile
-        user_role = user_profile.role
-    except Exception as e:
-        # If user is superuser but no profile, set as admin
-        if request.user.is_superuser:
-            user_role = 'admin'
+    
+    # FORCE ADMIN ROLE FOR SUPERUSERS
+    if request.user.is_superuser:
+        user_role = 'admin'
+        print(f"DEBUG: Superuser detected - FORCING admin role for {request.user.username}")
+    else:
+        try:
+            user_profile = request.user.profile
+            user_role = user_profile.role
+            print(f"DEBUG: User {request.user.username} profile role: {user_role}")
+        except Exception as e:
+            print(f"DEBUG: Profile access error for user {request.user.username}: {str(e)}")
+    
+    print(f"DEBUG: Final role for {request.user.username}: {user_role}")
     
     if user_role != 'admin':
         messages.error(request, 'You do not have permission to delete students.')
