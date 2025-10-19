@@ -16,7 +16,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def home(request):
-    """Home page view - Updated for admin role fix deployment"""
+    """Home page view - Updated for Render deployment trigger"""
     try:
         context = {
             'title': 'Student Management System',
