@@ -26,12 +26,30 @@ python manage.py collectstatic --noinput
 echo "Initializing currencies..."
 python manage.py init_currencies
 
+# Create user profiles for existing users
+echo "Creating user profiles..."
+python manage.py create_user_profiles
+
 # Create superuser if it doesn't exist
 echo "Creating admin user..."
 python manage.py shell -c "
 from django.contrib.auth.models import User
+from accounts.models import UserProfile
 if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+    admin_user = User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+    # Ensure admin has a profile
+    if not hasattr(admin_user, 'profile'):
+        UserProfile.objects.create(
+            user=admin_user,
+            role='admin',
+            phone='',
+            address='',
+            bio='',
+            language='en',
+            timezone='UTC',
+            theme='light',
+            is_verified=True
+        )
     print('Admin user created')
 else:
     print('Admin user already exists')

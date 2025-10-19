@@ -330,8 +330,23 @@ def add_student(request):
             if total_amount and float(total_amount) > 0:
                 from core.models import Currency
                 from fees.models import StudentPayment, PaymentTransaction
+                from accounts.models import UserProfile
                 
                 try:
+                    # Ensure the current user has a profile
+                    if not hasattr(request.user, 'profile'):
+                        UserProfile.objects.create(
+                            user=request.user,
+                            role='admin',  # Admin creating the student
+                            phone='',
+                            address='',
+                            bio='',
+                            language='en',
+                            timezone='UTC',
+                            theme='light',
+                            is_verified=False
+                        )
+                    
                     # Get selected currency
                     currency = Currency.objects.get(id=currency_id) if currency_id else Currency.objects.filter(is_default=True).first()
                     if not currency:

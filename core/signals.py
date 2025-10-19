@@ -7,6 +7,28 @@ from fees.models import StudentPayment, PaymentTransaction
 from batches.models import BatchGrade, BatchAttendance
 from accounts.models import UserProfile
 
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Automatically create a UserProfile when a User is created"""
+    if created:
+        try:
+            # Check if profile already exists
+            if not hasattr(instance, 'profile'):
+                UserProfile.objects.create(
+                    user=instance,
+                    role='student',  # Default role, can be changed later
+                    phone='',
+                    address='',
+                    bio='',
+                    language='en',
+                    timezone='UTC',
+                    theme='light',
+                    is_verified=False
+                )
+                print(f"Auto-created UserProfile for user {instance.username}")
+        except Exception as e:
+            print(f"Error creating UserProfile for user {instance.username}: {e}")
+
 @receiver(post_save, sender=Student)
 def create_student_payment_record(sender, instance, created, **kwargs):
     """Automatically create a payment record when a student is added to a batch"""
