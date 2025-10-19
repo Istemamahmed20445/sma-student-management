@@ -98,14 +98,21 @@ def dashboard(request):
         
         # Get user role from profile - FIXED ADMIN ROLE DETECTION
         role = 'student'  # Default role
-        try:
-            user_profile = user.profile
-            role = user_profile.role
-        except Exception as e:
-            logger.error(f"Profile access error for user {user.username}: {str(e)}")
-            # If user is superuser but no profile, set as admin
-            if user.is_superuser:
-                role = 'admin'
+        
+        # FORCE ADMIN ROLE FOR SUPERUSERS
+        if user.is_superuser:
+            role = 'admin'
+            print(f"DEBUG: Superuser detected - FORCING admin role for {user.username}")
+        else:
+            try:
+                user_profile = user.profile
+                role = user_profile.role
+                print(f"DEBUG: User {user.username} profile role: {role}")
+            except Exception as e:
+                print(f"DEBUG: Profile access error for user {user.username}: {str(e)}")
+                logger.error(f"Profile access error for user {user.username}: {str(e)}")
+        
+        print(f"DEBUG: Final role for {user.username}: {role}")
         
         context = {
             'title': 'Dashboard',
