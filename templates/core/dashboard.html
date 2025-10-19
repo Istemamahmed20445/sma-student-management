@@ -233,7 +233,7 @@
                 </div>
             </div>
 
-            <!-- Pending Installments -->
+            <!-- Remaining Amount -->
             <div class="bg-white overflow-hidden shadow rounded-lg">
                 <div class="p-5">
                     <div class="flex items-center">
@@ -242,8 +242,8 @@
                         </div>
                         <div class="ml-5 w-0 flex-1">
                             <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Pending Fees</dt>
-                                <dd class="text-lg font-medium text-gray-900">{{ pending_installments.count }}</dd>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Remaining Fees</dt>
+                                <dd class="text-lg font-medium text-gray-900">${{ remaining_amount|floatformat:2 }}</dd>
                             </dl>
                         </div>
                     </div>

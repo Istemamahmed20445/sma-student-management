@@ -169,49 +169,48 @@ def get_student_dashboard_data(user):
     """Get student dashboard data"""
     from students.models import Student
     from batches.models import BatchGrade, BatchAttendance
-    from fees.models import FeeInstallment
+    from fees.models import StudentPayment, PaymentTransaction
     from django.utils import timezone
     
     try:
         student = user.student_profile
         recent_grades = BatchGrade.objects.filter(student=student).order_by('-updated_at')[:5]
         recent_attendance = BatchAttendance.objects.filter(student=student).order_by('-date')[:5]
-        pending_installments = FeeInstallment.objects.filter(
-            student=student, 
-            status='pending'
-        ).order_by('due_date')
         
-        # Check for overdue installments and create notifications
-        overdue_installments = FeeInstallment.objects.filter(
-            student=student,
-            status='pending',
-            due_date__lt=timezone.now().date()
-        )
+        # Get payment information
+        payments = StudentPayment.objects.filter(student=student)
+        recent_transactions = PaymentTransaction.objects.filter(
+            payment__student=student
+        ).order_by('-payment_date')[:5]
         
-        notifications_created = 0
-        for installment in overdue_installments:
-            notification = installment.create_overdue_notification()
-            if notification:
-                notifications_created += 1
+        # Calculate payment status
+        total_paid = sum(payment.get_total_paid() for payment in payments)
+        total_due = sum(float(payment.total_amount) for payment in payments)
+        remaining_amount = total_due - total_paid
         
         return {
             'student': student,
             'recent_grades': recent_grades,
             'recent_attendance': recent_attendance,
-            'pending_installments': pending_installments,
-            'overdue_installments': overdue_installments,
-            'current_gpa': student.get_current_gpa(),
-            'notifications_created': notifications_created,
+            'recent_transactions': recent_transactions,
+            'payments': payments,
+            'total_paid': total_paid,
+            'total_due': total_due,
+            'remaining_amount': remaining_amount,
+            'current_gpa': getattr(student, 'get_current_gpa', lambda: 0.0)(),
         }
-    except:
+    except Exception as e:
         return {
             'student': None,
             'recent_grades': [],
             'recent_attendance': [],
-            'pending_installments': [],
-            'overdue_installments': [],
+            'recent_transactions': [],
+            'payments': [],
+            'total_paid': 0,
+            'total_due': 0,
+            'remaining_amount': 0,
             'current_gpa': 0.0,
-            'notifications_created': 0,
+            'error': str(e),
         }
 
 @method_decorator(csrf_exempt, name='dispatch')
