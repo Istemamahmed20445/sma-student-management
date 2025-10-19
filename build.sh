@@ -22,6 +22,10 @@ python manage.py migrate
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
+# Initialize currencies
+echo "Initializing currencies..."
+python manage.py init_currencies
+
 # Create superuser if it doesn't exist
 echo "Creating admin user..."
 python manage.py shell -c "
