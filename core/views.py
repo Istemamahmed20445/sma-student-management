@@ -16,7 +16,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def home(request):
-    """Home page view"""
+    """Home page view - Updated for admin role fix deployment"""
     try:
         context = {
             'title': 'Student Management System',
@@ -92,11 +92,11 @@ def user_debug_view(request):
 
 @login_required
 def dashboard(request):
-    """Main dashboard view"""
+    """Main dashboard view - Fixed admin role detection"""
     try:
         user = request.user
         
-        # Get user role from profile
+        # Get user role from profile - FIXED ADMIN ROLE DETECTION
         role = 'student'  # Default role
         try:
             user_profile = user.profile
