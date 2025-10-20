@@ -106,22 +106,27 @@ def delete_student_from_firebase(sender, instance, **kwargs):
         print(f"Error deleting student from Firebase: {e}")
 
 @receiver(post_save, sender=PaymentTransaction)
-def sync_payment_to_firebase(sender, instance, created, **kwargs):
+def sync_payment_transaction_to_firebase(sender, instance, created, **kwargs):
     """Sync payment transaction data to Firebase when saved"""
     try:
         if created:
-            student_firebase_manager.sync_payment_to_firestore(instance)
+            student_firebase_manager.sync_payment_transaction_to_firestore(instance)
         else:
             # Update existing document
             data = {
+                'transaction_id': str(instance.id),
+                'payment_id': str(instance.payment.id),
+                'student_id': instance.payment.student.student_id,
+                'batch_id': str(instance.payment.batch.id),
                 'amount': float(instance.amount),
                 'payment_method': instance.payment_method,
                 'payment_date': instance.payment_date.isoformat(),
                 'receipt_number': instance.receipt_number,
+                'processed_by': str(instance.processed_by.id) if instance.processed_by else None,
                 'notes': instance.notes,
                 'is_active': instance.is_active,
             }
-            student_firebase_manager.update_document('payments', instance.receipt_number, data)
+            student_firebase_manager.update_document('payment_transactions', instance.receipt_number, data)
     except Exception as e:
         print(f"Error syncing payment transaction to Firebase: {e}")
 

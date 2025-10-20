@@ -124,28 +124,41 @@ class StudentFirebaseManager(FirebaseManager):
         
         return self.create_document('students', data, student.student_id)
     
+    def sync_payment_transaction_to_firestore(self, transaction):
+        """Sync Django PaymentTransaction model to Firestore"""
+        data = {
+            'transaction_id': str(transaction.id),
+            'payment_id': str(transaction.payment.id),
+            'student_id': transaction.payment.student.student_id,
+            'batch_id': str(transaction.payment.batch.id),
+            'amount': float(transaction.amount),
+            'payment_method': transaction.payment_method,
+            'payment_date': transaction.payment_date.isoformat(),
+            'receipt_number': transaction.receipt_number,
+            'processed_by': str(transaction.processed_by.id) if transaction.processed_by else None,
+            'notes': transaction.notes,
+            'is_active': transaction.is_active,
+        }
+        
+        return self.create_document('payment_transactions', data, transaction.receipt_number)
+    
     def sync_payment_to_firestore(self, payment):
-        """Sync Django payment model to Firestore"""
+        """Sync Django StudentPayment model to Firestore"""
         data = {
             'payment_id': str(payment.id),
             'student_id': payment.student.student_id,
             'batch_id': str(payment.batch.id),
-            'amount': float(payment.amount),
+            'total_amount': float(payment.total_amount),
             'currency_code': payment.currency.code,
             'currency_name': payment.currency.name,
             'payment_method': payment.payment_method,
-            'transaction_id': payment.transaction_id,
-            'reference_number': payment.reference_number,
-            'bank_name': payment.bank_name,
             'status': payment.status,
-            'payment_date': payment.payment_date.isoformat(),
-            'receipt_number': payment.receipt_number,
-            'processed_by': str(payment.processed_by.id) if payment.processed_by else None,
             'notes': payment.notes,
+            'created_by': str(payment.created_by.id) if payment.created_by else None,
             'is_active': payment.is_active,
         }
         
-        return self.create_document('payments', data, payment.transaction_id)
+        return self.create_document('payments', data, str(payment.id))
     
     def sync_installment_to_firestore(self, installment):
         """Sync Django installment model to Firestore"""

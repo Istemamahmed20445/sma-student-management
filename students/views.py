@@ -92,8 +92,9 @@ def student_detail(request, student_id):
         # Create total payment object
         class TotalPayment:
             def __init__(self, total_amount, total_paid, currency, status):
-                self.total_amount = total_amount or 0
-                self.total_paid = total_paid or 0
+                from decimal import Decimal
+                self.total_amount = Decimal(str(total_amount or 0))
+                self.total_paid = Decimal(str(total_paid or 0))
                 self.currency = currency
                 self.status = status
                 self.remaining = self.total_amount - self.total_paid
