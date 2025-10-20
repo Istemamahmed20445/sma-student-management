@@ -52,6 +52,9 @@ urlpatterns = [
     # PWA URLs
     path('sw.js', service_worker, name='service_worker'),
     path('manifest.json', manifest, name='manifest'),
+    
+    # Favicon
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=True)),
 ]
 
 # Serve media files in development
