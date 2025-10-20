@@ -57,8 +57,11 @@ class StudentPayment(BaseModel):
     
     def get_completion_percentage(self):
         """Get completion percentage"""
+        from decimal import Decimal
         if self.total_amount > 0:
-            return (self.get_total_paid() / self.total_amount) * 100
+            total_paid = Decimal(str(self.get_total_paid()))
+            total_amount = Decimal(str(self.total_amount))
+            return float((total_paid / total_amount) * 100)
         return 0
     
     def is_completed(self):
