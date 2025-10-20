@@ -102,14 +102,29 @@ WSGI_APPLICATION = 'student_management.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use Firebase as the primary database
-# Django will use Firebase for data storage instead of traditional SQL database
+# PostgreSQL Database Configuration for Render
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # Keep SQLite for Django's internal tables
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'student_management_db_wkuv'),
+        'USER': os.getenv('DB_USER', 'student_management_db_wkuv_user'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'xiNTvRXZi4wRRLVPUguDzBQG6Q06sN4k'),
+        'HOST': os.getenv('DB_HOST', 'dpg-d3r5fh8dl3ps73ce5lj0-a.oregon-postgres.render.com'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+        'OPTIONS': {
+            'connect_timeout': 10,
+        }
     }
 }
+
+# Fallback to SQLite for local development if PostgreSQL is not available
+if os.getenv('USE_SQLITE', 'False').lower() == 'true':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Firebase Database Configuration
 FIREBASE_DATABASE_URL = 'https://sma-student-default-rtdb.firebaseio.com/'

@@ -56,7 +56,7 @@ def student_list(request):
     context = {
         'title': 'Students',
         'page_obj': page_obj,
-        'batches': Batch.objects.filter(is_active=True),
+        'batches': Batch.objects.filter(is_active=True).exclude(status='completed'),
         'search_query': search_query,
         'batch_filter': batch_filter,
         'status_filter': status_filter,
@@ -244,7 +244,7 @@ def student_application_form(request):
     
     context = {
         'title': 'Student Application',
-        'batches': Batch.objects.filter(is_active=True, status='active'),
+        'batches': Batch.objects.filter(is_active=True).exclude(status='completed'),
         'currencies': Currency.objects.filter(is_active=True),
     }
     
@@ -412,7 +412,7 @@ def add_student(request):
     
     context = {
         'title': 'Add Student',
-        'batches': Batch.objects.filter(is_active=True),
+        'batches': Batch.objects.filter(is_active=True).exclude(status='completed'),
         'currencies': Currency.objects.filter(is_active=True),
     }
     
@@ -548,7 +548,7 @@ def edit_student(request, student_id):
     context = {
         'title': f'Edit Student: {student.get_full_name()}',
         'student': student,
-        'batches': Batch.objects.filter(is_active=True),
+        'batches': Batch.objects.filter(is_active=True).exclude(status='completed'),
         'currencies': Currency.objects.filter(is_active=True),
     }
     
