@@ -1,10 +1,14 @@
 // Service Worker for Student Management System
-const CACHE_NAME = 'sma-student-v1';
+const CACHE_NAME = 'sma-student-v2';
 const urlsToCache = [
     '/',
     '/static/images/sma-logo.jpg',
+    '/static/images/pwa/icon-192x192.png',
+    '/static/images/pwa/icon-512x512.png',
     '/static/admin/css/base.css',
     '/static/admin/css/dashboard.css',
+    'https://cdn.tailwindcss.com',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
 // Install event
