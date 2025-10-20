@@ -11,6 +11,13 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 import pandas as pd
 import json
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from io import BytesIO
 
 from .models import StudentPayment, PaymentTransaction, PaymentImport
 from students.models import Student
@@ -220,7 +227,7 @@ def add_payment_transaction(request, payment_id):
                 amount=amount,
                 payment_method=payment_method,
                 notes=notes,
-                processed_by=request.user.profile if hasattr(request.user, 'profile') else None
+                processed_by=request.user  # Use User directly, not profile
             )
             
             messages.success(request, f'Payment of {amount} recorded successfully!')
@@ -496,7 +503,7 @@ class PaymentAPI(View):
                 amount=amount,
                 payment_method=payment_method,
                 notes=notes,
-                processed_by=request.user.profile if hasattr(request.user, 'profile') else None
+                processed_by=request.user  # Use User directly, not profile
             )
             
             return JsonResponse({
@@ -508,3 +515,309 @@ class PaymentAPI(View):
             
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+@login_required
+def generate_receipt_pdf(request, transaction_id):
+    """Generate PDF receipt for a payment transaction"""
+    transaction = get_object_or_404(PaymentTransaction, id=transaction_id)
+    payment = transaction.payment
+    student = payment.student
+    
+    # Create PDF buffer
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    
+    # Define styles
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        textColor=colors.darkblue
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=16,
+        spaceAfter=12,
+        alignment=TA_LEFT,
+        textColor=colors.darkblue
+    )
+    
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=12,
+        spaceAfter=6,
+        alignment=TA_LEFT
+    )
+    
+    # Build PDF content
+    story = []
+    
+    # Company Header
+    story.append(Paragraph("Shahriar's Medical Academy", title_style))
+    story.append(Spacer(1, 12))
+    
+    # Add logo if available
+    try:
+        logo_path = '/Users/istemamahmed/Desktop/Student Management System/static/images/sma-logo.jpg'
+        if os.path.exists(logo_path):
+            logo = Image(logo_path, width=2*inch, height=1*inch)
+            logo.hAlign = 'CENTER'
+            story.append(logo)
+            story.append(Spacer(1, 12))
+    except:
+        pass  # Logo is optional
+    
+    story.append(Paragraph("PAYMENT RECEIPT", heading_style))
+    story.append(Spacer(1, 12))
+    
+    # Receipt details
+    receipt_data = [
+        ['Receipt Number:', transaction.receipt_number],
+        ['Date:', transaction.payment_date.strftime('%B %d, %Y at %I:%M %p')],
+        ['Student ID:', student.student_id],
+        ['Student Name:', student.user.get_full_name()],
+        ['Batch:', payment.batch.name],
+        ['Phone:', student.phone if student.phone else 'N/A'],
+        ['Address:', student.address if student.address else 'N/A'],
+    ]
+    
+    # Payment details table
+    payment_table = Table(receipt_data, colWidths=[2*inch, 4*inch])
+    payment_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('BACKGROUND', (1, 0), (1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    
+    story.append(payment_table)
+    story.append(Spacer(1, 20))
+    
+    # Payment summary
+    story.append(Paragraph("PAYMENT SUMMARY", heading_style))
+    
+    payment_summary_data = [
+        ['Description', 'Amount'],
+        ['Total Course Fee', f"{payment.currency.code} {payment.total_amount:,.2f}"],
+        ['Amount Paid Previously', f"{payment.currency.code} {payment.get_total_paid() - float(transaction.amount):,.2f}"],
+        ['Current Payment', f"{payment.currency.code} {transaction.amount:,.2f}"],
+        ['Total Paid', f"{payment.currency.code} {payment.get_total_paid():,.2f}"],
+        ['Remaining Balance', f"{payment.currency.code} {payment.get_remaining_amount():,.2f}"],
+    ]
+    
+    summary_table = Table(payment_summary_data, colWidths=[3*inch, 2*inch])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    
+    story.append(summary_table)
+    story.append(Spacer(1, 20))
+    
+    # Payment method and notes
+    story.append(Paragraph(f"Payment Method: {transaction.get_payment_method_display()}", normal_style))
+    if transaction.notes:
+        story.append(Paragraph(f"Notes: {transaction.notes}", normal_style))
+    
+    story.append(Spacer(1, 30))
+    
+    # Footer
+    story.append(Paragraph("Thank you for your payment!", normal_style))
+    story.append(Spacer(1, 12))
+    story.append(Paragraph("Shahriar's Medical Academy", normal_style))
+    story.append(Paragraph("Contact: info@shahriaracademy.com", normal_style))
+    
+    # Build PDF
+    doc.build(story)
+    
+    # Get PDF content
+    pdf_content = buffer.getvalue()
+    buffer.close()
+    
+    # Create HTTP response
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="receipt_{transaction.receipt_number}.pdf"'
+    
+    return response
+
+@login_required
+def generate_payment_summary_pdf(request, payment_id):
+    """Generate PDF summary for a student's payment record"""
+    payment = get_object_or_404(StudentPayment, id=payment_id)
+    student = payment.student
+    transactions = payment.transactions.all().order_by('payment_date')
+    
+    # Create PDF buffer
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    
+    # Define styles
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        textColor=colors.darkblue
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=16,
+        spaceAfter=12,
+        alignment=TA_LEFT,
+        textColor=colors.darkblue
+    )
+    
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=12,
+        spaceAfter=6,
+        alignment=TA_LEFT
+    )
+    
+    # Build PDF content
+    story = []
+    
+    # Company Header
+    story.append(Paragraph("Shahriar's Medical Academy", title_style))
+    story.append(Spacer(1, 12))
+    
+    # Add logo if available
+    try:
+        logo_path = '/Users/istemamahmed/Desktop/Student Management System/static/images/sma-logo.jpg'
+        if os.path.exists(logo_path):
+            logo = Image(logo_path, width=2*inch, height=1*inch)
+            logo.hAlign = 'CENTER'
+            story.append(logo)
+            story.append(Spacer(1, 12))
+    except:
+        pass  # Logo is optional
+    
+    story.append(Paragraph("PAYMENT SUMMARY REPORT", heading_style))
+    story.append(Spacer(1, 12))
+    
+    # Student details
+    student_data = [
+        ['Student ID:', student.student_id],
+        ['Student Name:', student.user.get_full_name()],
+        ['Batch:', payment.batch.name],
+        ['Phone:', student.phone if student.phone else 'N/A'],
+        ['Address:', student.address if student.address else 'N/A'],
+        ['Enrollment Date:', payment.student.enrollment_date.strftime('%B %d, %Y')],
+    ]
+    
+    student_table = Table(student_data, colWidths=[2*inch, 4*inch])
+    student_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('BACKGROUND', (1, 0), (1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    
+    story.append(student_table)
+    story.append(Spacer(1, 20))
+    
+    # Payment transactions table
+    story.append(Paragraph("PAYMENT TRANSACTIONS", heading_style))
+    
+    transaction_data = [['Receipt #', 'Date', 'Amount', 'Method', 'Notes']]
+    
+    for transaction in transactions:
+        transaction_data.append([
+            transaction.receipt_number,
+            transaction.payment_date.strftime('%B %d, %Y'),
+            f"{payment.currency.code} {transaction.amount:,.2f}",
+            transaction.get_payment_method_display(),
+            transaction.notes[:30] + '...' if len(transaction.notes) > 30 else transaction.notes
+        ])
+    
+    transaction_table = Table(transaction_data, colWidths=[1.2*inch, 1.2*inch, 1*inch, 1*inch, 1.6*inch])
+    transaction_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    
+    story.append(transaction_table)
+    story.append(Spacer(1, 20))
+    
+    # Payment summary
+    story.append(Paragraph("PAYMENT SUMMARY", heading_style))
+    
+    summary_data = [
+        ['Total Course Fee', f"{payment.currency.code} {payment.total_amount:,.2f}"],
+        ['Total Paid', f"{payment.currency.code} {payment.get_total_paid():,.2f}"],
+        ['Remaining Balance', f"{payment.currency.code} {payment.get_remaining_amount():,.2f}"],
+        ['Payment Progress', f"{payment.get_completion_percentage():.1f}%"],
+    ]
+    
+    summary_table = Table(summary_data, colWidths=[3*inch, 2*inch])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('BACKGROUND', (1, 0), (1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    
+    story.append(summary_table)
+    story.append(Spacer(1, 30))
+    
+    # Footer
+    story.append(Paragraph("Generated on: " + datetime.now().strftime('%B %d, %Y at %I:%M %p'), normal_style))
+    story.append(Spacer(1, 12))
+    story.append(Paragraph("Shahriar's Medical Academy", normal_style))
+    
+    # Build PDF
+    doc.build(story)
+    
+    # Get PDF content
+    pdf_content = buffer.getvalue()
+    buffer.close()
+    
+    # Create HTTP response
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="payment_summary_{student.student_id}.pdf"'
+    
+    return response

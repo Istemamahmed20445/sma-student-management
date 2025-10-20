@@ -13,6 +13,9 @@
                     <p class="mt-1 text-sm text-gray-600">Simple payment tracking and transaction management</p>
                 </div>
                 <div class="flex space-x-3">
+                    <a href="{% url 'fees:print_payment_summary' payment.id %}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700" target="_blank">
+                        <i class="fas fa-print mr-2"></i>Print Summary
+                    </a>
                     <a href="{% url 'fees:edit_payment' payment.id %}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
                         <i class="fas fa-edit mr-2"></i>Edit Payment
                     </a>
@@ -118,6 +121,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Processed By</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -129,6 +133,11 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ transaction.payment_date|date:"M d, Y H:i" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ transaction.processed_by.get_full_name|default:"System" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ transaction.notes|default:"-" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="{% url 'fees:print_receipt' transaction.id %}" class="text-green-600 hover:text-green-900" target="_blank" title="Print Receipt">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
