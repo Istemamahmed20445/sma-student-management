@@ -109,18 +109,18 @@ import dj_database_url
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
+        'default': dj_database_url.parse(DATABASE_URL.strip())
     }
 else:
-    # Fallback to individual environment variables
+    # Fallback to individual environment variables (strip whitespace)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'student_management_db_wkuv'),
-            'USER': os.getenv('DB_USER', 'student_management_db_wkuv_user'),
-            'PASSWORD': os.getenv('DB_PASSWORD', 'xiNTvRXZi4wRRLVPUguDzBQG6Q06sN4k'),
-            'HOST': os.getenv('DB_HOST', 'dpg-d3r5fh8dl3ps73ce5lj0-a.oregon-postgres.render.com'),
-            'PORT': os.getenv('DB_PORT', '5432'),
+            'NAME': os.getenv('DB_NAME', 'student_management_db_wkuv').strip(),
+            'USER': os.getenv('DB_USER', 'student_management_db_wkuv_user').strip(),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'xiNTvRXZi4wRRLVPUguDzBQG6Q06sN4k').strip(),
+            'HOST': os.getenv('DB_HOST', 'dpg-d3r5fh8dl3ps73ce5lj0-a.oregon-postgres.render.com').strip(),
+            'PORT': os.getenv('DB_PORT', '5432').strip(),
             'OPTIONS': {
                 'connect_timeout': 10,
             }
