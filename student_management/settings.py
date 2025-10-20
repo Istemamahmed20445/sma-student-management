@@ -103,19 +103,29 @@ WSGI_APPLICATION = 'student_management.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # PostgreSQL Database Configuration for Render
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'student_management_db_wkuv'),
-        'USER': os.getenv('DB_USER', 'student_management_db_wkuv_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'xiNTvRXZi4wRRLVPUguDzBQG6Q06sN4k'),
-        'HOST': os.getenv('DB_HOST', 'dpg-d3r5fh8dl3ps73ce5lj0-a.oregon-postgres.render.com'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-        'OPTIONS': {
-            'connect_timeout': 10,
+import dj_database_url
+
+# Try to use DATABASE_URL first (standard Render approach)
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL)
+    }
+else:
+    # Fallback to individual environment variables
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'student_management_db_wkuv'),
+            'USER': os.getenv('DB_USER', 'student_management_db_wkuv_user'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'xiNTvRXZi4wRRLVPUguDzBQG6Q06sN4k'),
+            'HOST': os.getenv('DB_HOST', 'dpg-d3r5fh8dl3ps73ce5lj0-a.oregon-postgres.render.com'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'OPTIONS': {
+                'connect_timeout': 10,
+            }
         }
     }
-}
 
 # Fallback to SQLite for local development if PostgreSQL is not available
 if os.getenv('USE_SQLITE', 'False').lower() == 'true':

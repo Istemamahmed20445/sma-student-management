@@ -13,3 +13,4 @@ django-extensions==3.2.3
 pyrebase4==4.7.1
 reportlab==4.2.2
 psycopg2-binary>=2.9.11
+dj-database-url==2.1.0
