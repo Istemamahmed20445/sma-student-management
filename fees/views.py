@@ -208,8 +208,10 @@ def add_payment_transaction(request, payment_id):
             
             # Check if payment exceeds remaining amount
             remaining = payment.get_remaining_amount()
-            if amount > remaining:
-                messages.error(request, f'Payment amount cannot exceed remaining amount of {remaining}.')
+            # Use a small tolerance for floating point comparison
+            tolerance = 0.01
+            if amount > remaining + tolerance:
+                messages.error(request, f'Payment amount cannot exceed remaining amount of {remaining:.2f}.')
                 return redirect('fees:payment_detail', payment_id=payment.id)
             
             # Create transaction
@@ -483,8 +485,10 @@ class PaymentAPI(View):
             
             # Check if payment exceeds remaining amount
             remaining = payment.get_remaining_amount()
-            if amount > remaining:
-                return JsonResponse({'error': f'Payment amount cannot exceed remaining amount of {remaining}'}, status=400)
+            # Use a small tolerance for floating point comparison
+            tolerance = 0.01
+            if amount > remaining + tolerance:
+                return JsonResponse({'error': f'Payment amount cannot exceed remaining amount of {remaining:.2f}'}, status=400)
             
             # Create transaction
             transaction = PaymentTransaction.objects.create(

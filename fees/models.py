@@ -45,11 +45,15 @@ class StudentPayment(BaseModel):
         """Get total amount paid"""
         from django.db.models import Sum
         result = self.transactions.aggregate(total=Sum('amount'))['total']
-        return result or 0
+        total = result or 0
+        # Round to 2 decimal places to avoid floating point precision issues
+        return round(float(total), 2)
     
     def get_remaining_amount(self):
         """Get remaining amount to be paid"""
-        return float(self.total_amount) - float(self.get_total_paid())
+        remaining = float(self.total_amount) - float(self.get_total_paid())
+        # Round to 2 decimal places to avoid floating point precision issues
+        return round(remaining, 2)
     
     def get_completion_percentage(self):
         """Get completion percentage"""
