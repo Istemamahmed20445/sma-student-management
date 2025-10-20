@@ -110,8 +110,8 @@ class StudentFirebaseManager(FirebaseManager):
             'state': student.state,
             'postal_code': student.postal_code,
             'country': student.country,
-            'department_id': str(student.department.id),
-            'department_name': student.department.name,
+            'department_id': None,  # Department field removed
+            'department_name': None,  # Department field removed
             'batch_id': str(student.batch.id) if student.batch else None,
             'batch_name': student.batch.name if student.batch else None,
             'enrollment_date': student.enrollment_date.isoformat(),

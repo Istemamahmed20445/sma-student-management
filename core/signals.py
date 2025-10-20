@@ -83,8 +83,8 @@ def sync_student_to_firebase(sender, instance, created, **kwargs):
                 'state': instance.state,
                 'postal_code': instance.postal_code,
                 'country': instance.country,
-                'department_id': str(instance.department.id),
-                'department_name': instance.department.name,
+                'department_id': None,  # Department field removed
+                'department_name': None,  # Department field removed
                 'batch_id': str(instance.batch.id) if instance.batch else None,
                 'batch_name': instance.batch.name if instance.batch else None,
                 'status': instance.status,
