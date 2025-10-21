@@ -240,24 +240,52 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusSelect = document.getElementById('status');
     const searchInput = document.getElementById('search');
     
-    // Debounce search input
+    // Debounce search input - Fixed to prevent auto logout
     let searchTimeout;
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(function() {
             if (searchInput.value.length >= 2 || searchInput.value.length === 0) {
-                document.querySelector('form').submit();
+                // Use manual URL building instead of form submission to prevent session issues
+                const url = new URL(window.location);
+                url.searchParams.set('search', searchInput.value);
+                url.searchParams.delete('page'); // Reset pagination when searching
+                
+                // Navigate to the new URL without form submission
+                window.location.href = url.toString();
             }
-        }, 500);
+        }, 800); // Increased timeout to 800ms to reduce rapid requests
     });
     
-    // Auto-submit when batch or status changes
+    // Auto-submit when batch or status changes - Fixed to prevent auto logout
     batchSelect.addEventListener('change', function() {
-        document.querySelector('form').submit();
+        console.log('Batch changed to:', this.value);
+        
+        // Build URL manually to avoid form submission issues
+        const url = new URL(window.location);
+        if (this.value) {
+            url.searchParams.set('batch', this.value);
+        } else {
+            url.searchParams.delete('batch');
+        }
+        
+        // Navigate to the new URL
+        window.location.href = url.toString();
     });
     
     statusSelect.addEventListener('change', function() {
-        document.querySelector('form').submit();
+        console.log('Status changed to:', this.value);
+        
+        // Build URL manually to avoid form submission issues
+        const url = new URL(window.location);
+        if (this.value) {
+            url.searchParams.set('status', this.value);
+        } else {
+            url.searchParams.delete('status');
+        }
+        
+        // Navigate to the new URL
+        window.location.href = url.toString();
     });
     
     // Debug: Log form data on submit
