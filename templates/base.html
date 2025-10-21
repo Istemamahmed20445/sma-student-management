@@ -563,6 +563,32 @@
         }
     </script>
     
+    <!-- Session Keep-Alive - Prevent Auto Logout -->
+    <script>
+        // Keep session alive by making a request every 30 minutes
+        function keepSessionAlive() {
+            if (typeof fetch !== 'undefined') {
+                fetch('/accounts/keep-alive/', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                }).catch(function(error) {
+                    console.log('Session keep-alive failed:', error);
+                });
+            }
+        }
+
+        // Set up session keep-alive
+        if (window.location.pathname !== '/accounts/login/') {
+            // Keep session alive every 30 minutes (30 * 60 * 1000 ms)
+            setInterval(keepSessionAlive, 30 * 60 * 1000);
+        }
+    </script>
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

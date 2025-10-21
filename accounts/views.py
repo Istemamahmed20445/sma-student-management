@@ -3,6 +3,9 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from .models import UserProfile, Teacher, Parent
 # Department removed
 from students.models import Student
@@ -151,3 +154,24 @@ def edit_profile(request):
         pass
     
     return render(request, 'accounts/edit_profile.html', context)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@login_required
+def keep_alive(request):
+    """Keep user session alive to prevent auto logout"""
+    try:
+        # Update the session to keep it alive
+        request.session.modified = True
+        
+        # Return success response
+        return JsonResponse({
+            'success': True,
+            'message': 'Session kept alive',
+            'timestamp': json.dumps(request.user.last_login) if request.user.last_login else None
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)

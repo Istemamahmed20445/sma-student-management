@@ -254,6 +254,13 @@ LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
+# Session Configuration - Prevent Auto Logout
+SESSION_COOKIE_AGE = 86400  # 24 hours (in seconds)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = not DEBUG  # Only secure in production
+
 # Production Settings
 if not DEBUG:
     # Security settings for production
