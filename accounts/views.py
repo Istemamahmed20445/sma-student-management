@@ -157,10 +157,16 @@ def edit_profile(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@login_required
 def keep_alive(request):
     """Keep user session alive to prevent auto logout"""
     try:
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': False,
+                'error': 'User not authenticated'
+            }, status=401)
+        
         # Update the session to keep it alive
         request.session.modified = True
         
@@ -168,7 +174,7 @@ def keep_alive(request):
         return JsonResponse({
             'success': True,
             'message': 'Session kept alive',
-            'timestamp': json.dumps(request.user.last_login) if request.user.last_login else None
+            'timestamp': request.user.last_login.isoformat() if request.user.last_login else None
         })
     except Exception as e:
         return JsonResponse({

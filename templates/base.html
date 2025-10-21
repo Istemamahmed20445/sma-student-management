@@ -54,14 +54,20 @@
             appId: "1:621019846757:web:02faa1536bbb73969e0e8c"
         };
         
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-        
-        // Make Firebase available globally
-        window.firebase = { app, auth, db, storage };
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+            const storage = getStorage(app);
+            
+            // Make Firebase available globally
+            window.firebase = { app, auth, db, storage };
+        } catch (error) {
+            console.log('Firebase initialization failed:', error);
+            // Set empty Firebase object to prevent errors
+            window.firebase = { app: null, auth: null, db: null, storage: null };
+        }
     </script>
     
     <!-- Custom CSS -->
@@ -568,11 +574,29 @@
         // Keep session alive by making a request every 30 minutes
         function keepSessionAlive() {
             if (typeof fetch !== 'undefined') {
+                // Get CSRF token from cookies
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                
+                const csrfToken = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                
                 fetch('/accounts/keep-alive/', {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                        'X-CSRFToken': csrfToken,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({})

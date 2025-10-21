@@ -312,7 +312,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Build URL manually to avoid form submission issues
         const url = new URL(window.location);
-        url.searchParams.set('batch', this.value);
+        if (this.value) {
+            url.searchParams.set('batch', this.value);
+        } else {
+            url.searchParams.delete('batch');
+        }
         
         // Navigate to the new URL
         window.location.href = url.toString();
@@ -323,7 +327,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Build URL manually to avoid form submission issues
         const url = new URL(window.location);
-        url.searchParams.set('status', this.value);
+        if (this.value) {
+            url.searchParams.set('status', this.value);
+        } else {
+            url.searchParams.delete('status');
+        }
         
         // Navigate to the new URL
         window.location.href = url.toString();
