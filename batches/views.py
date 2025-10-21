@@ -95,8 +95,8 @@ def add_batch(request):
                 messages.error(request, 'Batch code is required.')
                 return render(request, 'batches/add_batch.html', context)
             
-            # Check if batch code already exists
-            if Batch.objects.filter(code=code).exists():
+            # Check if batch code already exists for active batches
+            if Batch.objects.filter(code=code, is_active=True).exists():
                 messages.error(request, f'Batch code "{code}" already exists. Please choose a different code.')
                 return render(request, 'batches/add_batch.html', context)
             
