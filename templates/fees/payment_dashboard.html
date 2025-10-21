@@ -193,7 +193,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-blue-600 h-2 rounded-full" style="width: {{ payment.get_completion_percentage|floatformat:1 }}%"></div>
+                                        <div class="bg-blue-600 h-2 rounded-full" data-width="{{ payment.get_completion_percentage|floatformat:1 }}"></div>
                                     </div>
                                     <span class="ml-2 text-sm text-gray-600">{{ payment.get_completion_percentage|floatformat:1 }}%</span>
                                 </div>
@@ -353,6 +353,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial state
     updateExportButton();
+    
+    // Set progress bar widths from data attributes
+    document.querySelectorAll('[data-width]').forEach(function(element) {
+        element.style.width = element.getAttribute('data-width') + '%';
+    });
 });
 
 // Delete Payment Function
